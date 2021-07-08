@@ -4,23 +4,31 @@ Bla bla bla.
 
 
 #include <cmath>
+#include <vector>
+
+#include <eigen3/Eigen/Eigen>
 
 
-typedef float Scalar;
+using namespace std;
+
+
+typedef Eigen::MatrixXf     Tensor2D;
+typedef Eigen::RowVectorXf  Tensor1D;
 
 
 /**
- Lorem Ipsum.
+ Compute the value of the sigmoid function for the given input.
 */
-Scalar sigmoidActivationFunction(Scalar X)
+float sigmoidActivationFunction(float X)
 {
     return 1 / (1 + exp(-X));
 }
 
 /**
- Lorem Ipsum.
+ Compute the value of the derivative of the sigmoid function for the given
+ input.
 */
-Scalar derivativeOfSigmoidActivationFunction(Scalar X)
+float derivativeOfSigmoidActivationFunction(float X)
 {
     return sigmoidActivationFunction(1 - sigmoidActivationFunction(X));
 }
@@ -36,9 +44,20 @@ class FeedForwardNeuralNetwork
         void computeLossGradients();
         void forwardPropagation();
         void updateWeights();
+        void train();
 
     private:
-        int layers;
+        // architecture hyperparameters such as number of layers and number
+        // of neurons each:
+        vector<Tensor1D*> architecture;
+        // layers' weights:
+        vector<Tensor2D*> weights;
+        // intermediate linear combination results of all layers before
+        // activation function application, stored for convenience:
+        vector<Tensor1D*> action_potentials;
+        // loss gradients with respect to the different layers' weights:
+        vector<Tensor1D*> gradients;
+        float learning_rate;
 };
 
 /**
@@ -73,6 +92,14 @@ void FeedForwardNeuralNetwork::forwardPropagation()
  Lorem Ipsum.
 */
 void FeedForwardNeuralNetwork::updateWeights()
+{
+    
+}
+
+/**
+ Lorem Ipsum.
+*/
+void FeedForwardNeuralNetwork::train()
 {
     
 }
