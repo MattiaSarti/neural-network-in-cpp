@@ -14,6 +14,7 @@ using namespace std;
 
 typedef Eigen::MatrixXf     Tensor2D;
 typedef Eigen::RowVectorXf  Tensor1D;
+typedef unsigned int        uint;
 
 
 /**
@@ -39,26 +40,63 @@ float derivativeOfSigmoidActivationFunction(float X)
 class FeedForwardNeuralNetwork
 {
     public:
-        FeedForwardNeuralNetwork();
+        FeedForwardNeuralNetwork(vector<uint> n_neurons_in_each_layer);
         void backPropagation();
         void computeLossGradients();
         void forwardPropagation();
         void updateWeights();
-        void train();
+        void train(float learning_rate);
 
     private:
-        // architecture hyperparameters such as number of layers and number
-        // of neurons each:
-        vector<Tensor1D*> architecture;
-        // layers' weights:
+        // architecture hyperparameters, specifically number of layers and
+        // number of neurons each:
+        vector<uint> architecture;
+        // layers' weights (including biases):
         vector<Tensor2D*> weights;
-        // intermediate linear combination results of all layers before
-        // activation function application, stored for convenience:
+        // intermediate linear combination results before activation function
+        // application of all layers:
         vector<Tensor1D*> action_potentials;
+        // activations, i.e. results of linear combination with weights
+        // followed by activation function application, of all layers:
+        vector<Tensor1D*> activations;
         // loss gradients with respect to the different layers' weights:
         vector<Tensor1D*> gradients;
-        float learning_rate;
 };
+
+/**
+ Lorem Ipsum.
+*/
+FeedForwardNeuralNetwork::FeedForwardNeuralNetwork(vector<uint> n_neurons_in_each_layer)
+{
+    architecture = n_neurons_in_each_layer;
+    int n_layers = architecture.size();
+
+    // initializing each layer's weights, action potentials, outputs and
+    // gradients:
+    for (int i = 0; i < n_layers; ++i) {
+
+        // when considering the last layer, the number of outputs has to be
+        // considered instead of the number of neurons of the following layer
+        // in order to define the connections, i.e. the weights, of the
+        // current layer; moreover, biases are not added to the last layer:
+        if (i != (n_layers - 1)) {
+
+            //TODO
+
+        } else {
+
+            //TODO
+
+            // adding biases:
+
+        }
+
+        // randomly initializing weights:
+
+        // initializing action potentials and weights' gradients:
+
+    }
+}
 
 /**
  Compute the loss value comparing the last layer outputs to the target
@@ -99,7 +137,7 @@ void FeedForwardNeuralNetwork::updateWeights()
 /**
  Lorem Ipsum.
 */
-void FeedForwardNeuralNetwork::train()
+void FeedForwardNeuralNetwork::train(float learning_rate)
 {
     
 }
