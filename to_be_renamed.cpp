@@ -41,8 +41,8 @@ class FeedForwardNeuralNetwork
 {
     public:
         FeedForwardNeuralNetwork(vector<uint> n_neurons_in_each_layer);
-        void backPropagation();
-        void computeLossGradients();
+        void backPropagation(Tensor1D& target_outputs);
+        void computeLossGradients(Tensor1D& target_outputs);
         void forwardPropagation();
         void updateWeights();
         void train(float learning_rate);
@@ -69,33 +69,59 @@ class FeedForwardNeuralNetwork
 FeedForwardNeuralNetwork::FeedForwardNeuralNetwork(vector<uint> n_neurons_in_each_layer)
 {
     architecture = n_neurons_in_each_layer;
-    int n_layers = architecture.size();
+    int n_layers = n_neurons_in_each_layer.size();
 
     // initializing each layer's weights, action potentials, outputs and
     // gradients:
-    for (int i = 0; i < n_layers; ++i) {
+    for (uint i = 0; i < n_layers; ++i) {
 
-        // when considering the last layer, the number of outputs has to be
-        // considered instead of the number of neurons of the following layer
-        // in order to define the connections, i.e. the weights, of the
-        // current layer; moreover, biases are not added to the last layer:
+        // :
+        uint n_neurons = (
+            (i != (n_layers - 1)) ?
+            n_neurons_in_each_layer[i + 1] :
+            n_neurons_in_each_layer[i]
+        );
+
+        // initializing action potentials:
+        action_potentials.push_back(new Tensor1D(n_neurons));
+
+        // declaring layer's activations:// adding biases:
+        activations.push_back(new Tensor1D());
+        
+        if (i != 0) {
+            // randomly initializing weights:
+            weights.push_back(new Tensor2D());
+            weights.back();
+        }
+
+        // when considering the last
+        // layer, the number of outputs has to be considered instead of the
+        // number of neurons of the following layer in order to define the
+        // connections, i.e. the weights, of the current layer; moreover,
+        // biases are not added to the last layer:
         if (i != (n_layers - 1)) {
 
-            //TODO
+            // :
+            action_potentials.back();
 
-        } else {
+            // :
+            activations.back();
 
-            //TODO
+            // :
+            if (i != 0) {
+                weights.back();
+                weights.back();
+            }
 
-            // adding biases:
+        } else {                                                   // TODO: use "insert" in place of "coeffRef" for Tensor2D
 
         }
 
-        // randomly initializing weights:
-
-        // initializing action potentials and weights' gradients:
+        // initialing weights' gradients:
+        gradients.push_back(new Tensor1D(n_neurons));
 
     }
+
 }
 
 /**
@@ -104,18 +130,20 @@ FeedForwardNeuralNetwork::FeedForwardNeuralNetwork(vector<uint> n_neurons_in_eac
  weight and update the latter accordingly, to carry out a single step of
  gradient descent.
 */
-void FeedForwardNeuralNetwork::backPropagation()
+void FeedForwardNeuralNetwork::backPropagation(Tensor1D& target_outputs)
 {
-    computeLossGradients();
+    computeLossGradients(target_outputs);
     updateWeights();
 }
 
 /**
  Lorem Ipsum.
 */
-void FeedForwardNeuralNetwork::computeLossGradients()
+void FeedForwardNeuralNetwork::computeLossGradients(Tensor1D& target_outputs)
 {
-    
+    // TODO: compute actual gradients, not just errors
+    (*(gradients.back())) = target_outputs - (*(activations.back()));
+
 }
 
 /**
