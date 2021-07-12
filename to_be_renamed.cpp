@@ -43,7 +43,7 @@ class FeedForwardNeuralNetwork
         FeedForwardNeuralNetwork(vector<uint> n_neurons_in_each_layer);
         void backPropagation(Tensor1D& target_outputs);
         void computeLossGradients(Tensor1D& target_outputs);
-        void forwardPropagation();
+        void forwardPropagation(Tensor1D& inputs);
         void updateWeights();
         void train(float learning_rate);
 
@@ -149,9 +149,37 @@ void FeedForwardNeuralNetwork::computeLossGradients(Tensor1D& target_outputs)
 /**
  Lorem Ipsum.
 */
-void FeedForwardNeuralNetwork::forwardPropagation()
+void FeedForwardNeuralNetwork::forwardPropagation(Tensor1D& inputs)
 {
-    
+    int n_layers = architecture.size();
+
+    // setting the input layer values as the inputs - accessing a block of
+    // size (p,q) starting at (i,j) via ".block(i,j,p,q)" for tensors:
+    uint n_input_neurons = activations.front()->size();  // TODO: understand why not " = architecture[0];"
+    activations.front()->block(0, 0, 1, n_input_neurons - 1) = inputs;
+
+    // propagating the inputs to the outputs by computing the activations of
+    // each neuron in each layer from the previous layer's activations by
+    // linearly combining the neuron inputs with the respective weights first
+    // and then applying the activation function, layer by layer:
+    for (int i = 1; i < n_layers; ++i) {
+
+        // computing the result of the linear combination with weights (i.e.
+        // the action potential):
+        (*activations[i]) = (*activations[i - 1]) * (*weights[i - 1]);
+
+        // for all layers but the last one, whose outputs require a different
+        // activation function:
+        if (i != n_layers - 1) {
+            // applying the activation function to the linear combination
+            // result:
+            uint n_neurons = architecture[i];
+            activations[i]->block(0, 0, 1, n_neurons).unaryExpr(
+                ptr_fun(sigmoidActivationFunction)
+            );
+        }
+
+    }
 }
 
 /**
