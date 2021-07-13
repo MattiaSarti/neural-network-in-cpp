@@ -1,22 +1,12 @@
 /*
-Bla bla bla.
+ Bla bla bla.
 */
 
 
-#include <cassert>
-#include <cmath>
-#include <iostream>
-#include <vector>
-
-#include <eigen3/Eigen/Eigen>
+#include <common.hpp>
 
 
 using namespace std;
-
-
-typedef Eigen::MatrixXf     Tensor2D;
-typedef Eigen::RowVectorXf  Tensor1D;
-typedef unsigned int        uint;
 
 
 /**
