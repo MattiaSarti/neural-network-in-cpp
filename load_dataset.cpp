@@ -27,13 +27,11 @@ void loadDataset (string filename, vector<Tensor1D*>& samples, vector<Tensor1D*>
 
     uint n_features = 0;
     while (getline(stream, cell, ',')) {
-        cout << float(stof(&cell[0])) << endl;
         ++n_features;
     }
     // since the last column represents the class label, the actual number of
     // features equal the number of columns encountered minus one:
     n_features -= 1;
-    cout << n_features << endl;
 
     if (file.is_open()) {
 
@@ -49,20 +47,22 @@ void loadDataset (string filename, vector<Tensor1D*>& samples, vector<Tensor1D*>
 
             uint feature_indx = 0;
             while (getline(stream, cell, ',')) {
+                
+                float cell_value = float(stof(&cell[0]));
 
                 // if the current cell is not the last one of the row, it
                 // contains the corresponding feature's value:
-                if (feature_indx != n_features - 1) {
+                if (feature_indx != n_features) {
 
                     // adding the feature value to the sample:
-                    samples.back()->coeffRef(feature_indx) = float(stof(&cell[0]));
+                    samples.back()->coeffRef(feature_indx) = cell_value;
 
                 // if the current cell is the last one of the row, it contains
                 // the class label:
                 } else {
 
                     // associating the class label to the sample:
-                    labels.back()->coeffRef(1) = float(stof(&cell[0]));
+                    labels.back()->coeffRef(0) = cell_value;
 
                 }
 
