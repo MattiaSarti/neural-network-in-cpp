@@ -1,8 +1,11 @@
 # A C++ Implementation of a Simple Fully-Connected Neural Network
 
-- Feed-forward Fully-Connected
+- Feed-Forward Fully-Connected Multi-Layer
 - Trained
-- SGD
+- SGD (mini-batches of a 1 sample)
+- Regression
+- Dataset
+![](https://github.com/MattiaSarti/toy-neural-network-in-cpp/readme_pictures/readme_pictures)
 
 ## My Attitude
 
