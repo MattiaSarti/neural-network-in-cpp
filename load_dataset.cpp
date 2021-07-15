@@ -9,22 +9,24 @@
 using namespace std;
 
 
+/*
+ Load the samples and labels constituting the dataset from a CSV file where
+ each row - but the first one, which is used only to count the number of
+ columns - representa a sample: each cell contains a feature value but the
+ last one, which represents the class label.
+*/
 void loadDataset (string filename, vector<Tensor1D*>& samples, vector<Tensor1D*>& labels) {
+
+    string line, cell;
 
     samples.clear();
     labels.clear();
-
-    string line, cell;
-    vector<float> first_sample;
-
     ifstream file(filename);
 
     // counting the number of columns (and features):
 
     getline(file, line, '\n');
-
     stringstream stream(line);
-
     uint n_features = 0;
     while (getline(stream, cell, ',')) {
         ++n_features;
@@ -35,8 +37,9 @@ void loadDataset (string filename, vector<Tensor1D*>& samples, vector<Tensor1D*>
 
     if (file.is_open()) {
 
-        // reading the following rows, the actual ones with data, each one
-        // containing a sample's feature values and its label:
+        // reading the following rows - the actual ones with data - each one
+        // containing a sample's feature values (all but the last cell) and
+        // its label (the last cell):
 
         while (getline(file, line, '\n')) {
 
@@ -45,10 +48,11 @@ void loadDataset (string filename, vector<Tensor1D*>& samples, vector<Tensor1D*>
             samples.push_back(new Tensor1D(n_features));
             labels.push_back(new Tensor1D(1));
 
+            float cell_value;
             uint feature_indx = 0;
             while (getline(stream, cell, ',')) {
-                
-                float cell_value = float(stof(&cell[0]));
+
+                cell_value = float(stof(&cell[0]));
 
                 // if the current cell is not the last one of the row, it
                 // contains the corresponding feature's value:
@@ -73,19 +77,4 @@ void loadDataset (string filename, vector<Tensor1D*>& samples, vector<Tensor1D*>
 
     }
 
-}
-
-int main () {
-    vector<Tensor1D*> samples;
-    vector<Tensor1D*> labels;
-    loadDataset("temp.csv", samples, labels);
-    for (uint i = 0; i < samples.size(); ++i) {
-        cout << *samples[i] << " - ";
-    }
-    cout << endl;
-    for (uint i = 0; i < labels.size(); ++i) {
-        cout << *labels[i] << " - ";
-    }
-
-    return 0;
 }
