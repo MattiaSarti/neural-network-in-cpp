@@ -3,31 +3,43 @@
 */
 
 
-#include <common.hpp>
+#include "common.hpp"//"model.hpp"  // FIXME
 
 
 using namespace std;
 
 
 /**
+ Compute the value of the simple difference loss (i.e. signed error) between
+ the predicted output and the expected, target output.
+ NOTE: the derivative of such loss with respect to the predicted output is
+ unitary and simplifies computations.
+*/
+float errorLoss(Tensor1D& predicted_output, Tensor1D& target_output)
+{
+    return (predicted_output.data() - target_output.data());
+}
+
+/**
  Compute the value of the sigmoid function for the given input.
 */
-float sigmoidActivationFunction(float X)
+float sigmoidActivationFunction(float input)
 {
-    return 1 / (1 + exp(-X));
+    return 1 / (1 + exp(-input));
 }
 
 /**
  Compute the value of the derivative of the sigmoid function for the given
  input.
 */
-float derivativeOfSigmoidActivationFunction(float X)
+float derivativeOfSigmoidActivationFunction(float input)
 {
-    return sigmoidActivationFunction(1 - sigmoidActivationFunction(X));
+    return sigmoidActivationFunction(1 - sigmoidActivationFunction(input));
 }
 
 /**
- Lorem Ipsum.
+ Feed-forward, fully-connected, multi-layer neural network for single-output
+ regression with sigmoidal activation functions and biases in hidden layers.
 */
 class FullyConnectedNeuralNetwork
 {
@@ -35,9 +47,10 @@ class FullyConnectedNeuralNetwork
         FullyConnectedNeuralNetwork(vector<uint> n_neurons_in_each_layer);
         void backPropagation(Tensor1D& target_outputs, float learning_rate);
         void computeLossGradients(Tensor1D& target_outputs);
+        void evaluate(vector<Tensor1D*> validation_samples, vector<Tensor1D*> validation_labels);
         void forwardPropagation(Tensor1D& inputs);
         void updateWeightsViaSGD(float learning_rate);
-        void train(vector<Tensor1D*> inputs, vector<Tensor1D*> targets, float learning_rate);
+        void train(vector<Tensor1D*> inputs, vector<Tensor1D*> targets, float learning_rate, uint n_epochs);
 
     private:
         // architecture hyperparameters, specifically number of layers and
@@ -56,10 +69,14 @@ class FullyConnectedNeuralNetwork
 };
 
 /**
- Lorem Ipsum.
+ Build the neural network architecture components.
 */
 FullyConnectedNeuralNetwork::FullyConnectedNeuralNetwork(vector<uint> n_neurons_in_each_layer)        // TODO: understand
 {
+    // adding the last layer's number of neurons, set to 1 for the
+    // sinlge-output regression problem of interest:
+    n_neurons_in_each_layer.push_back(1);
+
     architecture = n_neurons_in_each_layer;
     int n_layers = n_neurons_in_each_layer.size();
 
@@ -141,7 +158,7 @@ void FullyConnectedNeuralNetwork::computeLossGradients(Tensor1D& target_outputs)
 {
     /*
     // computing loss gradients with respect to weights of the last layers:
-    (*(gradients.back())) = target_outputs - (*(activations.back()));
+    (*(gradients.back())) = errorLoss((*(activations.back())), target_outputs);
 
     // computing loss gradients with respect to weights of the hidden layers,
     // excluding the input layer, which is not associated to any weight matrix
@@ -157,7 +174,30 @@ void FullyConnectedNeuralNetwork::computeLossGradients(Tensor1D& target_outputs)
 }
 
 /**
- Lorem Ipsum.
+ Train the model on the given samlpes.
+*/
+void FullyConnectedNeuralNetwork::evaluate(vector<Tensor1D*> validation_samples, vector<Tensor1D*> validation_labels)
+{
+    assert(validation_samples.size() == validation_labels.size());
+
+    // for each training sample:
+    uint n_samples = validation_samples.size();
+    for (uint sample_indx = 0; sample_indx < n_samples; ++sample_indx) {
+
+        // forward propagation of the sample through the network, computing
+        // layers' activations sequentially:
+        forwardPropagation(*validation_samples[sample_indx]);
+
+        cout << "\t" << "expected output: " << *validation_labels[sample_indx] << endl;
+        cout << "\t" << "vs" << endl;
+        cout << "\t" << "actual output: " << *activations.back() << endl;
+        cout << "\t" << "loss value: " << errorLoss(*activations.back(), *validation_labels[sample_indx]) << endl;
+    }
+}
+
+/**
+ Forward-propagate the input tensor through the model layers, computing the
+ output.
 */
 void FullyConnectedNeuralNetwork::forwardPropagation(Tensor1D& inputs)
 {
@@ -248,38 +288,45 @@ void FullyConnectedNeuralNetwork::updateWeightsViaSGD(float learning_rate)
 }
 
 /**
- Lorem Ipsum.
+ Train the model on the given samlpes.
 */
-void FullyConnectedNeuralNetwork::train(vector<Tensor1D*> training_samples, vector<Tensor1D*> training_labels, float learning_rate)
+void FullyConnectedNeuralNetwork::train(vector<Tensor1D*> training_samples, vector<Tensor1D*> training_labels, float learning_rate, uint n_epochs)
 {
     assert(training_samples.size() == training_labels.size());
 
+    uint n_samples = training_samples.size();
+
     cout << "training started ✔" << endl;
 
-    // for each training sample:
-    uint n_samples = training_samples.size();
-    for (uint sample_indx = 0; sample_indx < n_samples; ++sample_indx) {
+    // for each epoch:
+    for (uint epoch_indx = 0; epoch_indx < n_epochs; ++epoch_indx) {
 
-        cout << "\t" << "sample: " << *training_samples[sample_indx] << endl;
+        cout << "epoch " << (epoch_indx + 1) << "/" << n_epochs << endl;
 
-        // forward propagation of the sample through the network, computing
-        // layers' activations sequentially:
-        forwardPropagation(*training_samples[sample_indx]);
+        // for each training sample:
+        for (uint sample_indx = 0; sample_indx < n_samples; ++sample_indx) {
 
-        cout << "\t" << "expected output: " << *training_labels[sample_indx] << endl;
-        cout << "\t" << "vs" << endl;
-        cout << "\t" << "actual output: " << *activations.back() << endl;
+            cout << "\t" << "sample features: " << *training_samples[sample_indx] << endl;
 
-        // backward propagation of the loss gradients through the network with
-        // respect to the different weights eventually updating them
-        // accordingly:
-        backPropagation(*training_labels[sample_indx], learning_rate);
+            // forward propagation of the sample through the network, computing
+            // layers' activations sequentially:
+            forwardPropagation(*training_samples[sample_indx]);
 
-        cout << "\t" << "loss value: " << "TODO" << endl;                                    // TODO
-        cout << "\t" << "weights updated accordingly ✔" << endl;
+            cout << "\t" << "expected output: " << *training_labels[sample_indx] << endl;
+            cout << "\t" << "vs" << endl;
+            cout << "\t" << "actual output: " << *activations.back() << endl;
+            cout << "\t" << "loss value: " << errorLoss(*activations.back(), *training_labels[sample_indx]) << endl;
+
+            // backward propagation of the loss gradients through the network with
+            // respect to the different weights eventually updating them
+            // accordingly:
+            backPropagation(*training_labels[sample_indx], learning_rate);
+            cout << "\t" << "weights updated accordingly ✔" << endl;
+
+        }
 
     }
 
-    cout << "model trained successfully ✔" << endl;
+    cout << "model successfully trained ✔" << endl;
 
 }
