@@ -5,7 +5,7 @@
 - SGD (mini-batches of a 1 sample)
 - Regression
 - Dataset
-![](https://github.com/MattiaSarti/toy-neural-network-in-cpp/readme_pictures/readme_pictures)
+![](https://github.com/MattiaSarti/toy-neural-network-in-cpp/blob/main/readme_pictures/dataset_plot.png)
 
 ## My Attitude
 
