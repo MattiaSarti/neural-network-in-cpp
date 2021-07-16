@@ -52,6 +52,20 @@ def create_dataset() -> ndarray:
     return stacked_samples_and_labels
 
 
+def plot(data: ndarray, title_text: str):
+    """
+    Create a custom scatter plot with the desired data and title while
+    following the same template for axes' labels and colorbar.
+    """
+    scatter(
+        x=data[:, 0],
+        y=data[:, 1],
+        c=data[:, 2]
+    )
+    dress_plot()
+    title(title_text)
+
+
 def dress_plot() -> None:
     """
     Add axes' labels and colorbar to the current plot.
@@ -88,13 +102,8 @@ if __name__ == '__main__':
 
         # plotting the whole dataset samples in the 2D feature space,
         # color-coded by label:
-        whole_dataset_figure = figure()
-        scatter(
-            x=dataset[:, 0],
-            y=dataset[:, 1],
-            c=dataset[:, 2]
-        )
-        dress_plot()
+        figure()
+        plot(data=dataset, title_text="Output Value as Color")
 
         if SAVE_PLOTS:
 
@@ -104,7 +113,6 @@ if __name__ == '__main__':
                 "readme_pictures",
                 "whole_dataset_plot.png"
             )
-            title("Output Value as Color")
             savefig(picture_path)
 
         if PLOT:
@@ -114,23 +122,11 @@ if __name__ == '__main__':
 
         # separately plotting the two separate sets' samples in the 2D feature
         # space, color-coded by label:
-        separate_sets_figure = figure(figsize=(12, 4))
+        figure(figsize=(12, 4))
         subplot(1, 2, 1)
-        scatter(
-            x=training_dataset[:, 0],
-            y=training_dataset[:, 1],
-            c=training_dataset[:, 2]
-        )
-        dress_plot()
-        title("Training Set")
+        plot(data=training_dataset, title_text="Training Set")
         subplot(1, 2, 2)
-        scatter(
-            x=validation_dataset[:, 0],
-            y=validation_dataset[:, 1],
-            c=validation_dataset[:, 2]
-        )
-        dress_plot()
-        title("Validation Set")
+        plot(data=validation_dataset, title_text="Validation Set")
 
         if SAVE_PLOTS:
 
