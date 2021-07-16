@@ -18,9 +18,12 @@ int main ()
     vector<Tensor1D*> training_samples;
     vector<Tensor1D*> training_labels;
     loadDataset("training_set.csv", training_samples, training_labels);
+    cout << "training set loaded ✓" << endl;
+
     vector<Tensor1D*> validation_samples;
     vector<Tensor1D*> validation_labels;
     loadDataset("validation_set.csv", validation_samples, validation_labels);
+    cout << "validation set loaded ✓" << endl;
 
     /*
     for (uint i = 0; i < samples.size(); ++i) {

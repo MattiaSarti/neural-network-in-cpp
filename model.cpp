@@ -324,7 +324,7 @@ void FullyConnectedNeuralNetwork::train(vector<Tensor1D*> training_samples, vect
 
     uint n_samples = training_samples.size();
 
-    cout << "training started ✔" << endl;
+    cout << "training started ✓" << endl;
 
     // for each epoch:
     for (uint epoch_indx = 0; epoch_indx < n_epochs; ++epoch_indx) {
@@ -349,12 +349,12 @@ void FullyConnectedNeuralNetwork::train(vector<Tensor1D*> training_samples, vect
             // respect to the different weights eventually updating them
             // accordingly:
             backPropagation(*training_labels[sample_indx], learning_rate);
-            cout << "\t" << "weights updated accordingly ✔" << endl;
+            cout << "\t" << "weights updated accordingly ✓" << endl;
 
         }
 
     }
 
-    cout << "model successfully trained ✔" << endl;
+    cout << "model successfully trained ✓" << endl;
 
 }
