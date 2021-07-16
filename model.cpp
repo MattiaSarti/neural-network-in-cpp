@@ -15,9 +15,9 @@ using namespace std;
  NOTE: the derivative of such loss with respect to the predicted output is
  unitary and simplifies computations.
 */
-float errorLoss(Tensor1D& predicted_output, Tensor1D& target_output)
+Tensor1D errorLoss(Tensor1D& predicted_output, Tensor1D& target_output)
 {
-    return (predicted_output.data() - target_output.data());
+    return (predicted_output - target_output);
 }
 
 /**
@@ -47,7 +47,7 @@ class FullyConnectedNeuralNetwork
         FullyConnectedNeuralNetwork(vector<uint> n_neurons_in_each_layer);
         void backPropagation(Tensor1D& target_outputs, float learning_rate);
         void computeLossGradients(Tensor1D& target_outputs);
-        void evaluate(vector<Tensor1D*> validation_samples, vector<Tensor1D*> validation_labels);
+        void evaluate(vector<Tensor1D*> validation_samples, vector<Tensor1D*> validation_labels, string output_path, bool verbose);
         void forwardPropagation(Tensor1D& inputs);
         void updateWeightsViaSGD(float learning_rate);
         void train(vector<Tensor1D*> inputs, vector<Tensor1D*> targets, float learning_rate, uint n_epochs);
@@ -78,13 +78,13 @@ FullyConnectedNeuralNetwork::FullyConnectedNeuralNetwork(vector<uint> n_neurons_
     n_neurons_in_each_layer.push_back(1);
 
     architecture = n_neurons_in_each_layer;
-    int n_layers = n_neurons_in_each_layer.size();
+    uint n_layers = n_neurons_in_each_layer.size();
 
     // initializing each layer's weights, action potentials, outputs and
     // gradients:
     for (uint layer_indx = 0; layer_indx < n_layers; ++layer_indx) {
 
-        bool is_not_first_layer = (!(layer_indx = 0));
+        bool is_not_first_layer = (!(layer_indx == 0));
         bool is_not_last_layer = (!(layer_indx == (n_layers - 1)));
         uint n_neurons_previous_layer;
         uint n_neurons_current_layer = n_neurons_in_each_layer[layer_indx];
@@ -174,13 +174,23 @@ void FullyConnectedNeuralNetwork::computeLossGradients(Tensor1D& target_outputs)
 }
 
 /**
- Train the model on the given samlpes.
+ Evaluate the model on the validation set, printing the average loss value and
+ saving predictions to the file system.
 */
-void FullyConnectedNeuralNetwork::evaluate(vector<Tensor1D*> validation_samples, vector<Tensor1D*> validation_labels)
+void FullyConnectedNeuralNetwork::evaluate(vector<Tensor1D*> validation_samples, vector<Tensor1D*> validation_labels, string output_path, bool verbose = false)
 {
     assert(validation_samples.size() == validation_labels.size());
 
-    // for each training sample:
+    string space = "       ";
+    ofstream file_stream(output_path);
+    Tensor1D* cumulative_loss = new Tensor1D(1);
+    *cumulative_loss << 0;
+
+    if (verbose) {
+        cout << "evaluating predictions for every validation sample:" << endl;
+    }
+
+    // for each validation sample:
     uint n_samples = validation_samples.size();
     for (uint sample_indx = 0; sample_indx < n_samples; ++sample_indx) {
 
@@ -188,11 +198,29 @@ void FullyConnectedNeuralNetwork::evaluate(vector<Tensor1D*> validation_samples,
         // layers' activations sequentially:
         forwardPropagation(*validation_samples[sample_indx]);
 
-        cout << "\t" << "expected output: " << *validation_labels[sample_indx] << endl;
-        cout << "\t" << "vs" << endl;
-        cout << "\t" << "actual output: " << *activations.back() << endl;
-        cout << "\t" << "loss value: " << errorLoss(*activations.back(), *validation_labels[sample_indx]) << endl;
+        if (verbose) {
+            cout << space;
+            cout << "expected output: " << *validation_labels[sample_indx];
+            cout << space << "vs" << space;
+            cout << "actual output: " << *activations.back();
+            cout << space << "->" << space;
+            cout << "loss value: " << errorLoss(*activations.back(), *validation_labels[sample_indx]);
+            cout << endl;
+        }
+
+        // cumulating the loss value for the current sample to eventually
+        // compute the average loss:
+        *cumulative_loss += errorLoss(*activations.back(), *validation_labels[sample_indx]);
+
+        // saving the prediction for the current sample to the output file:
+        file_stream << *activations.back() << endl;
     }
+
+    // printing the average loss value over the samples of the validation set:
+    cout << "average loss on the validation set: " << (*cumulative_loss / n_samples) << endl;
+
+    file_stream.close();
+
 }
 
 /**
