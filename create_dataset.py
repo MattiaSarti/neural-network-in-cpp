@@ -10,13 +10,14 @@ from os.path import join as os_join
 from matplotlib.pyplot import (
     colorbar, figure, savefig, scatter, show, title, xlabel, ylabel
 )
-from numpy import savetxt, stack
+from numpy import insert, savetxt, stack
 from sklearn.datasets import make_swiss_roll
 
 
 GAUSSIAN_NOISE_STD = 0.2
-N_SAMPLES = 600
+N_SAMPLES = 10
 SEED = 0
+VALIDATION_AMOUNT = 0.3
 
 PLOT = True
 SAVE_PLOT = True
@@ -34,7 +35,8 @@ dataset_samples, dataset_labels = make_swiss_roll(
 
 if PLOT or SAVE_PLOT:
 
-    # plotting the dataset samples in the 2D space color-coded by label:
+    # plotting the dataset samples in the 2D feature space, color-coded by
+    # label:
     figure()
     scatter(
         x=dataset_samples[:, 0],
@@ -47,6 +49,7 @@ if PLOT or SAVE_PLOT:
     colorbar()
 
     if SAVE_PLOT:
+
         # saving the plot picture:
         picture_path = os_join(
             PROJECT_DIR,
@@ -56,19 +59,13 @@ if PLOT or SAVE_PLOT:
         savefig(picture_path)
 
     if PLOT:
+
         # displaying the plot:
         show()
 
 if SAVE_DATA:
 
-    # saving the dataset to a CSV file where each row - but the first one,
-    # which is used only to count the number of columns - represents a sample
-    # whose respective features and its label are orderly reported in
-    # different columns:
-    dataset_path = os_join(
-        PROJECT_DIR,
-        "dataset.csv"
-    )
+    # splitting the dataset into training and validation sets:
     dataset = stack(
         (
             dataset_samples[:, 0],
@@ -77,4 +74,35 @@ if SAVE_DATA:
         ),
         axis=-1
     )
-    savetxt(fname=dataset_path, X=dataset, delimiter=',')
+    split_sign = int(N_SAMPLES * (1 - VALIDATION_AMOUNT))
+    training_dataset = dataset[:split_sign,]
+    validation_dataset = dataset[split_sign:,]
+
+    # saving each dataset to a CSV file where each row - but the first one,
+    # which is used only to count the number of columns - represents a sample
+    # whose respective features and its label are orderly reported in
+    # different columns:
+    training_dataset_path = os_join(
+        PROJECT_DIR,
+        "training_set.csv"
+    )
+    validation_dataset_path = os_join(
+        PROJECT_DIR,
+        "validation_set.csv"
+    )
+    # adding a fictitious initial sample with no data to each file just to
+    # count features:
+    training_dataset = insert(
+        arr=training_dataset,
+        obj=0,
+        values=[None, None, None],
+        axis=0
+    )
+    validation_dataset = insert(
+        arr=validation_dataset,
+        obj=0,
+        values=[None, None, None],
+        axis=0
+    )
+    savetxt(fname=training_dataset_path, X=training_dataset, delimiter=',')
+    savetxt(fname=validation_dataset_path, X=validation_dataset, delimiter=',')
