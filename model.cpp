@@ -80,6 +80,9 @@ FullyConnectedNeuralNetwork::FullyConnectedNeuralNetwork(vector<uint> n_neurons_
     architecture = n_neurons_in_each_layer;
     uint n_layers = n_neurons_in_each_layer.size();
 
+    // making random weight initialization reproducible:
+    srand((uint) 0);
+
     // initializing each layer's weights, action potentials, outputs and
     // gradients:
     for (uint layer_indx = 0; layer_indx < n_layers; ++layer_indx) {
