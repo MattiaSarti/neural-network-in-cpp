@@ -11,6 +11,7 @@ from matplotlib.pyplot import (
     colorbar, figure, savefig, scatter, show, title, xlabel, ylabel
 )
 from numpy import insert, savetxt, stack
+from numpy.random import shuffle
 from sklearn.datasets import make_swiss_roll
 
 
@@ -65,7 +66,8 @@ if PLOT or SAVE_PLOT:
 
 if SAVE_DATA:
 
-    # splitting the dataset into training and validation sets:
+    # splitting the dataset into training and validation sets, after randomly
+    # shuffling samples and labels (keeping correspondences):
     dataset = stack(
         (
             dataset_samples[:, 0],
@@ -74,6 +76,7 @@ if SAVE_DATA:
         ),
         axis=-1
     )
+    dataset = shuffle(dataset)
     split_sign = int(N_SAMPLES * (1 - VALIDATION_AMOUNT))
     training_dataset = dataset[:split_sign,]
     validation_dataset = dataset[split_sign:,]
