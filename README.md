@@ -4,7 +4,7 @@
 - Trained
 - SGD (mini-batches of a 1 sample)
 - Regression
-- Dataset
+- Dataset (a 2D projection of a Swiss Roll dataset by Scikit-Learn)
 
 ![](https://github.com/MattiaSarti/toy-neural-network-in-cpp/blob/main/readme_pictures/dataset_plot.png)
 
