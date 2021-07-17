@@ -1,5 +1,8 @@
 /*
- Bla bla bla.
+ Definition of the class representing a Feed-Forward, Fully-Connected,
+ Multilayer Neural Network, with methods that allow not only to make
+ inferences and evaluate the goodness of predictions but also to train the
+ model.
 */
 
 
@@ -162,12 +165,12 @@ FullyConnectedNeuralNetwork::FullyConnectedNeuralNetwork(vector<uint> n_neurons_
 
 /**
  Compute the loss value comparing the last layer outputs to the target
- predictions, update the gradient of such loss with respect to each model
- weight and update the latter accordingly, to carry out a single step of
+ predictions, compute the gradient of such loss with respect to each model
+ weight and update these latter accordingly, to carry out a single step of
  gradient descent.
- Update the weights of each layer - except the input layer, that is not
- associated to any weight matrix - via Stochastic Gradient Descent based on
- loss gradients with respect to the respective weights, computed previously.
+ The weights of each layer - except the input layer, that is not
+ associated to any weight matrix - are updated via Stochastic Gradient Descent,
+ with mini-batched of size 1.
 */
 void FullyConnectedNeuralNetwork::backPropagation(Tensor1D& target_outputs, float learning_rate)
 {
@@ -242,7 +245,9 @@ void FullyConnectedNeuralNetwork::backPropagation(Tensor1D& target_outputs, floa
 }
 
 /**
- TODO // loss gradient with respect to the selected weight, individuated by its (starting, not ending) layer index and its position in the weight matrix associated to that layer.
+ Compute the loss gradient with respect to the selected weight, which is
+ individuated by its (starting, not ending) layer index and its position in
+ such layer weight matrix.
 */
 float FullyConnectedNeuralNetwork::computeLossGradientWRTWeight(uint layer_indx, uint row_indx, uint column_indx)
 {
@@ -337,7 +342,10 @@ void FullyConnectedNeuralNetwork::forwardPropagation(Tensor1D& inputs)
 }
 
 /**
- TODO.
+ Update the selected weight, which is individuated by its (starting, not
+ ending) layer index and its position in such layer weight matrix, to carry
+ out a step of Stochastic Gradient Descent modulated by the given learning
+ rate.
 */
 void FullyConnectedNeuralNetwork::updateWeightViaSGD(uint layer_indx, uint row_indx, uint column_indx, float learning_rate)
 {
