@@ -20,16 +20,6 @@ int main ()
     loadDataset("validation_set.csv", validation_samples, validation_labels);
     cout << "validation set loaded ✓" << endl;
 
-    /*
-    for (uint i = 0; i < samples.size(); ++i) {
-        cout << *samples[i] << " - ";
-    }
-    cout << endl;
-    for (uint i = 0; i < labels.size(); ++i) {
-        cout << *labels[i] << " - ";
-    }
-    */
-
     cout << "- - - - - - - - - - - -" << endl;
 
     vector<uint> n_neurons_in_layers = {2, 4, 3};
