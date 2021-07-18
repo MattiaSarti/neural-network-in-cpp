@@ -264,8 +264,7 @@ void FullyConnectedNeuralNetwork::evaluate(vector<Tensor1D*> validation_samples,
 
     string space = "       ";
     ofstream file_stream(output_path);
-    Tensor1D* cumulative_loss = new Tensor1D(1);
-    *cumulative_loss << 0;
+    float cumulative_loss = 0;
 
     if (verbose) {
         cout << "evaluating predictions for every validation sample:" << endl;
@@ -291,14 +290,14 @@ void FullyConnectedNeuralNetwork::evaluate(vector<Tensor1D*> validation_samples,
 
         // cumulating the loss value for the current sample to eventually
         // compute the average loss - MAE (Mean Absolute Error) employed:
-        *cumulative_loss += abs(errorLoss(*activations.back(), *validation_labels[sample_indx]));
+        cumulative_loss += abs(errorLoss(*activations.back(), *validation_labels[sample_indx]).value());
 
         // saving the prediction for the current sample to the output file:
         file_stream << *activations.back() << endl;
     }
 
     // printing the average loss value over the samples of the validation set:
-    cout << "average loss on the validation set: " << (*cumulative_loss / n_samples) << endl;
+    cout << "average loss on the validation set: " << (cumulative_loss / n_samples) << endl;
 
     file_stream.close();
 
