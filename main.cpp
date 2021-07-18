@@ -8,11 +8,6 @@
 
 int main ()
 {
-    /*
-    Eigen::MatrixXf m(10, 6);
-    m.setRandom();
-    std::cout << m << std::endl;
-    */
 
     // loading training and validation sets:
     vector<Tensor1D*> training_samples;
@@ -38,6 +33,9 @@ int main ()
     cout << "- - - - - - - - - - - -" << endl;
 
     vector<uint> n_neurons_in_layers = {2, 4, 3};
+    // asserting that the number of neurons of first layer equals the number
+    // of features that samples in the dataset have:
+    // TODO: assert(n_neurons_in_layers.front() == validation_samples.front().size());
     FullyConnectedNeuralNetwork model(n_neurons_in_layers);
 
     cout << "- - - - - - - - - - - -" << endl;
@@ -48,7 +46,10 @@ int main ()
 
     cout << "- - - - - - - - - - - -" << endl;
 
-    // model.train(...;)
+    // training the model on the training set:
+    float learning_rate = 0.001;
+    uint n_epochs = 10000;
+    model.train(training_samples, training_labels, learning_rate, n_epochs);
 
     cout << "- - - - - - - - - - - -" << endl;
 
