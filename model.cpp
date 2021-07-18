@@ -20,7 +20,7 @@ using namespace std;
 */
 Tensor1D errorLoss(Tensor1D& predicted_output, Tensor1D& target_output)
 {
-    return (predicted_output - target_output);
+    return (target_output - predicted_output);
 }
 
 /**
@@ -290,8 +290,8 @@ void FullyConnectedNeuralNetwork::evaluate(vector<Tensor1D*> validation_samples,
         }
 
         // cumulating the loss value for the current sample to eventually
-        // compute the average loss:
-        *cumulative_loss += errorLoss(*activations.back(), *validation_labels[sample_indx]);
+        // compute the average loss - MAE (Mean Absolute Error) employed:
+        *cumulative_loss += abs(errorLoss(*activations.back(), *validation_labels[sample_indx]));
 
         // saving the prediction for the current sample to the output file:
         file_stream << *activations.back() << endl;
