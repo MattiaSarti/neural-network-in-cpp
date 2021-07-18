@@ -17,7 +17,7 @@ from sklearn.datasets import make_swiss_roll
 
 
 GAUSSIAN_NOISE_STD = 0.2
-N_SAMPLES = 80
+N_SAMPLES = 80  # 80
 SEED = 0
 VALIDATION_AMOUNT = 0.3
 
@@ -111,7 +111,7 @@ if __name__ == '__main__':
             picture_path = os_join(
                 PROJECT_DIR,
                 "readme_pictures",
-                "whole_dataset_plot.png"
+                "whole_dataset.png"
             )
             savefig(picture_path)
 
@@ -134,7 +134,7 @@ if __name__ == '__main__':
             picture_path = os_join(
                 PROJECT_DIR,
                 "readme_pictures",
-                "separate_sets_plot.png"
+                "separate_sets.png"
             )
             savefig(picture_path)
 
