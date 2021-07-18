@@ -1,5 +1,7 @@
 /*
- Bla bla bla.
+ Script loading the training and validation sets from the file system,
+ training the model on the training set and evaluating it before and after
+ training on the validation set, saving results to the file system.
 */
 
 
