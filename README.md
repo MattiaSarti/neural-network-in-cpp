@@ -19,12 +19,11 @@
 ## Requirements
 
 - C++
-    - gcc Version: 6.3.0 (MinGW.org GCC-6.3.0-1)\
+    - gcc Version: 6.3.0 (MinGW.org GCC-6.3.0-1)
     - Libraries (& Their Versions):
         - eigen==3.3.9
-
 - Python
-    - Version: 3.8.0\
+    - Version: 3.8.0
     - Libraries (& Their Versions):
         - numpy==1.20.2
         - matplotlib==3.3.2
