@@ -16,14 +16,14 @@ from numpy.random import seed, shuffle
 from sklearn.datasets import make_swiss_roll
 
 
-GAUSSIAN_NOISE_STD = 0.2
-N_SAMPLES = 80  # 80
+GAUSSIAN_NOISE_STD = 1
+N_SAMPLES = 600  # 80
 SEED = 0
 VALIDATION_AMOUNT = 0.3
 
 PLOT = True
-SAVE_PLOTS = True
 SAVE_DATA = True
+SAVE_PLOTS = True
 
 PROJECT_DIR = getcwd()
 
@@ -75,6 +75,31 @@ def dress_plot() -> None:
     colorbar()
 
 
+def save_dataset(actual_dataset: ndarray, file_path: str) -> None:
+    """
+    Save the input dataset to a CSV file where each row - but the first one,
+    which is used only to count the number of columns - represents a sample
+    whose respective features and its label are orderly reported in different
+    columns; a fictitious initial sample with no data is added to the file
+    just to count features:
+    """
+    # adding a fictitious initial sample with no data to file just to allow to
+    # count features more conveniently - creatind kind of an "initially
+    # padded" dataset:
+    padded_dataset = insert(
+        arr=actual_dataset,
+        obj=0,
+        values=[None, None, None],
+        axis=0
+    )
+    # saving the padded dataset to the file system:
+    savetxt(
+        fname=file_path,
+        X=padded_dataset,
+        delimiter=','
+    )
+
+
 def split_dataset(whole_dataset: ndarray) -> Tuple[ndarray, ndarray]:
     """
     Split the dataset into training and validation sets, after randomly
@@ -83,9 +108,10 @@ def split_dataset(whole_dataset: ndarray) -> Tuple[ndarray, ndarray]:
     seed(0)  # for a reproducible shuffling
     shuffle(whole_dataset)
     split_sign = int(N_SAMPLES * (1 - VALIDATION_AMOUNT))
-    training_set = whole_dataset[:split_sign,]
-    validation_set = whole_dataset[split_sign:,]
+    training_set = whole_dataset[:split_sign, ]
+    validation_set = whole_dataset[split_sign:, ]
     return training_set, validation_set
+
 
 if __name__ == '__main__':
 
@@ -148,28 +174,19 @@ if __name__ == '__main__':
         # saving each dataset to a CSV file where each row - but the first
         # one, which is used only to count the number of columns - represents
         # a sample whose respective features and its label are orderly
-        # reported in different columns:
-        training_dataset_path = os_join(
-            PROJECT_DIR,
-            "training_set.csv"
+        # reported in different columns; a fictitious initial sample
+        # with no data is added to each file to count features:
+        save_dataset(
+            actual_dataset=training_dataset,
+            file_path=os_join(
+                PROJECT_DIR,
+                "training_set.csv"
+            )
         )
-        validation_dataset_path = os_join(
-            PROJECT_DIR,
-            "validation_set.csv"
+        save_dataset(
+            actual_dataset=validation_dataset,
+            file_path=os_join(
+                PROJECT_DIR,
+                "validation_set.csv"
+            )
         )
-        # adding a fictitious initial sample with no data to each file just to
-        # count features:
-        training_dataset = insert(
-            arr=training_dataset,
-            obj=0,
-            values=[None, None, None],
-            axis=0
-        )
-        validation_dataset = insert(
-            arr=validation_dataset,
-            obj=0,
-            values=[None, None, None],
-            axis=0
-        )
-        savetxt(fname=training_dataset_path, X=training_dataset, delimiter=',')
-        savetxt(fname=validation_dataset_path, X=validation_dataset, delimiter=',')

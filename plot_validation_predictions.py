@@ -7,7 +7,7 @@ before and after training.
 from os import getcwd
 from os.path import join as os_join
 
-from matplotlib.pyplot import figure, savefig, show, subplot, title
+from matplotlib.pyplot import figure, savefig, show, subplot
 from numpy import array, ndarray
 
 from create_dataset import create_dataset, plot, split_dataset
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     post_training_predictions = load_predictions(
         file_path=POST_TRAINING_PREDICTIONS_PATH
     )
-    
+
     fig = figure(figsize=(12, 4))
     fig.suptitle("Predictions On The Validation Set")
 
