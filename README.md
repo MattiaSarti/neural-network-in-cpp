@@ -2,7 +2,7 @@
 
 A C++ implementation of a feed-forward, fully-connected, multi-layer neural network for single-output regression problems, trained via Stochastic Gradient Descent (mini-batches of 1 sample) and evaluated respectively on training and validation partitions of a self-made regression dataset: a 2D projection of a Swiss Roll dataset by Scikit-Learn, whose samples are shown as color-coded by output value in the 2D feature space in the following picture.
 
-![...loading...](https://github.com/MattiaSarti/toy-neural-network-in-cpp/blob/main/readme_pictures/bigger_dataset.png)
+<img src="https://github.com/MattiaSarti/toy-neural-network-in-cpp/blob/main/readme_pictures/bigger_dataset.png" alt="...loading..." width="200"/>
 
 
 ## How to Reproduce Results:
@@ -11,9 +11,8 @@ A C++ implementation of a feed-forward, fully-connected, multi-layer neural netw
 python create_dataset.py
 ```
 
-![...loading...](https://github.com/MattiaSarti/toy-neural-network-in-cpp/blob/main/readme_pictures/whole_dataset.png)
+<img src="https://github.com/MattiaSarti/toy-neural-network-in-cpp/blob/main/readme_pictures/whole_dataset.png" alt="...loading..." width="200"/>
 
-![...loading...](https://github.com/MattiaSarti/toy-neural-network-in-cpp/blob/main/readme_pictures/separate_sets.png)
 
 ```
 g++
@@ -25,7 +24,7 @@ g++
 python plot_validation_predictions.py
 ```
 
-![...loading...](https://github.com/MattiaSarti/toy-neural-network-in-cpp/blob/main/readme_pictures/predictions_before_and_after_training.png)
+<img src="https://github.com/MattiaSarti/toy-neural-network-in-cpp/blob/main/readme_pictures/predictions_before_and_after_training.png" alt="...loading..." width="200"/>
 
 
 ## Requirements
