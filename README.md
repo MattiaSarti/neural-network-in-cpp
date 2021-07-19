@@ -42,15 +42,6 @@ python plot_validation_predictions.py
 </p>
 
 
-## Code Style
-
-- **C++**
-    - ... compliant ✔
-- **Python - Only for Creating Datasets and Plots**
-    - flake8 3.8.4 compliant ✔
-    - pylint 2.5.3 compliant ✔
-
-
 ## Requirements
 
 - **C++**
@@ -63,3 +54,12 @@ python plot_validation_predictions.py
         - numpy==1.20.2
         - matplotlib==3.3.2
         - scikit_learn==0.24.2
+
+
+## Code Style
+
+- **C++**
+    - ... compliant ✔
+- **Python - Only for Creating Datasets and Plots**
+    - flake8 3.8.4 compliant ✔
+    - pylint 2.5.3 compliant ✔
