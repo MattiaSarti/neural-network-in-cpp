@@ -27,6 +27,8 @@ I went through [an already-existing implementation](https://www.geeksforgeeks.or
         - matplotlib==3.3.2
         - scikit_learn==0.24.2
 
+### Steps:
+
 ```
 python create_dataset.py
 ```
@@ -41,7 +43,7 @@ python create_dataset.py
 
 
 ```
-g++
+g++ ...
 ```
 
 - MAE as metric
