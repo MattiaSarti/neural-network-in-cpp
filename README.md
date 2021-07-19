@@ -60,6 +60,7 @@ python plot_validation_predictions.py
 ## Code Style
 
 - **C++**
+    - clang-tidy 12.0.0-6923b0a7 (LLVM) compliant ✔
     - cpplint 1.5.5 compliant ✔
 - **Python**
     - flake8 3.8.4 compliant ✔
