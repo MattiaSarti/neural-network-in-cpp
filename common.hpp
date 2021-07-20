@@ -1,5 +1,5 @@
 /*
- Bla bla bla.
+ Common library inclusions and type definitions.
 */
 
 
