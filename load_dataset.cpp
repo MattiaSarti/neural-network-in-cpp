@@ -13,11 +13,12 @@
  last one, which represents the class label.
 */
 void loadDataset(
-    std::string filename,
+    const std::string& filename,
     std::vector<Tensor1D*>* samples,
     std::vector<Tensor1D*>* labels
 ) {
-    std::string line, cell;
+    std::string line;
+    std::string cell;
 
     samples->clear();
     labels->clear();
