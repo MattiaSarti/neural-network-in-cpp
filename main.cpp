@@ -8,6 +8,10 @@
 #include "common.hpp"  // "model.hpp"  // FIXME
 
 
+const float LEARNING_RATE = 0.001;
+const uint N_EPOCHS = 10000;
+
+
 int main() {
     // loading training and validation sets:
     std::vector<Tensor1D*> training_samples;
@@ -32,20 +36,19 @@ int main() {
 
     // evaluating the model on the validation set before training:
     std::string results_path = "validation_set_predictions_before_training.csv";
-    model.evaluate(validation_samples, validation_labels, results_path);
+    model.evaluate(validation_samples, validation_labels, results_path, false);
 
     std::cout << "- - - - - - - - - - - -" << std::endl;
 
     // training the model on the training set:
-    float learning_rate = 0.001;
-    uint n_epochs = 10000;
-    model.train(training_samples, training_labels, learning_rate, n_epochs);
+    model.train(training_samples, training_labels, LEARNING_RATE, N_EPOCHS,
+        false);
 
     std::cout << "- - - - - - - - - - - -" << std::endl;
 
     // evaluating the model on the validation set after training:
     results_path = "validation_set_predictions_after_training.csv";
-    model.evaluate(validation_samples, validation_labels, results_path);
+    model.evaluate(validation_samples, validation_labels, results_path, false);
 
     std::cout << "- - - - - - - - - - - -" << std::endl;
 
