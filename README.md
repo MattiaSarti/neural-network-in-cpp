@@ -1,5 +1,5 @@
 <h1 align="center">
-    <p>A C++ Implementation of a Simple Fully-Connected Neural Network</p>
+    <p>A C++ Implementation of a Fully-Connected Neural Network</p>
 </h1>
 
 A C++ implementation of a feed-forward, fully-connected, multi-layer neural network for single-output regression problems, trained via Stochastic Gradient Descent (mini-batches of 1 sample) and evaluated respectively on training and validation partitions of a self-made regression dataset: a 2D projection of a Swiss Roll dataset by Scikit-Learn, whose samples are shown as color-coded by output value in the 2D feature space in the following picture.
