@@ -31,9 +31,7 @@ I went through [an already-existing implementation](https://www.geeksforgeeks.or
 
 ### Steps:
 
-```
-python create_dataset.py
-```
+```python create_dataset.py```
 
 <p align="center">
     <img src="https://github.com/MattiaSarti/toy-neural-network-in-cpp/blob/main/readme_pictures/whole_dataset.png" alt="...loading..."  width="500"/>
@@ -44,15 +42,16 @@ python create_dataset.py
 </p>
 
 
+
+I did some manual hyperparameter tuning beforehand to know how many layers and neurons in each one could yield good results on a similar dataset exploiting [TensorFlow Playground](https://playground.tensorflow.org/), and [these final settings that I tried](https://playground.tensorflow.org/#activation=relu&batchSize=1&dataset=spiral&regDataset=reg-gauss&learningRate=0.01&regularizationRate=0&noise=0&networkShape=8,8,6,4&seed=0.75558&showTestData=false&discretize=false&percTrainData=70&x=true&y=true&xTimesY=false&xSquared=false&ySquared=false&cosX=false&sinX=false&cosY=false&sinY=false&collectStats=false&problem=classification&initZero=false&hideText=false) convinced me to input such architecture hyperparameters (number of layers and neurons each) to the script execution:
+
+
 ```
 g++ ...
 ```
-
 - MAE as metric
 
-```
-python plot_validation_predictions.py
-```
+```python plot_validation_predictions.py```
 
 <p align="center">
     <img src="https://github.com/MattiaSarti/toy-neural-network-in-cpp/blob/main/readme_pictures/predictions_before_and_after_training.png" alt="...loading..."  width="900"/>
