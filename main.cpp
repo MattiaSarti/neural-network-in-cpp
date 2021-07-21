@@ -8,8 +8,12 @@
 #include "common.hpp"  // "model.hpp"  // FIXME
 
 
-const float LEARNING_RATE = 0.001;
-const uint N_EPOCHS = 10000;
+// architecture hyperparameters:
+const std::string ACTIVATION_FUNCTIONS_NAME = "ReLU";
+const std::vector<uint> N_NEURONS_IN_LAYERS = {2, 8, 8, 6, 4};
+// training hyperparameters:
+const float LEARNING_RATE = 0.00001;
+const uint N_EPOCHS = 100;
 
 
 int main() {
@@ -26,11 +30,11 @@ int main() {
 
     std::cout << "- - - - - - - - - - - -" << std::endl;
 
-    std::vector<uint> n_neurons_in_layers = {2, 4, 3};
     // asserting that the number of neurons of first layer equals the number
     // of features that samples in the dataset have:
-    assert(n_neurons_in_layers.front() == validation_samples.front()->size());
-    FullyConnectedNeuralNetwork model(n_neurons_in_layers);
+    assert(N_NEURONS_IN_LAYERS.front() == validation_samples.front()->size());
+    FullyConnectedNeuralNetwork model(N_NEURONS_IN_LAYERS,
+                                      ACTIVATION_FUNCTIONS_NAME);
 
     std::cout << "- - - - - - - - - - - -" << std::endl;
 
