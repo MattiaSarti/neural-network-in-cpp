@@ -49,7 +49,7 @@ I did some manual hyperparameter tuning beforehand to know how many layers and n
 ```
 g++ ...
 ```
-- MAE as metric
+- MSE both as loss and metric
 
 ```python plot_validation_predictions.py```
 

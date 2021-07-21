@@ -6,45 +6,66 @@
 */
 
 
-#include "common.hpp"  // "model.hpp"  // FIXME
+#include "common.hpp"//"model.hpp"  // FIXME
 
 
 /**
- Compute the value of the simple difference loss (i.e. signed error) between
+ Compute the value of the squared difference loss (i.e. squareq error) between
  the predicted output and the expected, target output.
  NOTE: the derivative of such loss with respect to the predicted output is
- unitary and simplifies computations.
+ unitary and simplifies computations. TODO(me): update
 */
 Tensor1D errorLoss(
     const Tensor1D* predicted_output,
     const Tensor1D* target_output
 ) {
-    return (*target_output - *predicted_output);
+    return (*target_output - *predicted_output).array().pow(2);
+}
+
+/**
+ Compute the value of the ReLU function for the given input.
+*/
+float ReLUFunction(const float& input) {
+    return std::max(input, static_cast<float>(0));
 }
 
 /**
  Compute the value of the sigmoid function for the given input.
 */
-float sigmoidActivationFunction(float input) {
+float sigmoidFunction(const float& input) {
     return 1 / (1 + exp(-input));
+}
+
+/**
+ Compute the value of the derivative of the ReLU function for the given
+ input.
+*/
+float ReLUFunctionDerivative(const float& input) {
+    return ((input > 0) ? static_cast<float>(1) : static_cast<float>(0));
 }
 
 /**
  Compute the value of the derivative of the sigmoid function for the given
  input.
 */
-float derivativeOfSigmoidActivationFunction(float input) {
-    return sigmoidActivationFunction(1 - sigmoidActivationFunction(input));
+float sigmoidFunctionDerivative(const float& input) {
+    return sigmoidFunction(1 - sigmoidFunction(input));
 }
 
 /**
  Feed-forward, fully-connected, multi-layer neural network for single-output
- regression with sigmoidal activation functions and biases in hidden layers.
+ regression with either sigmoidal or ReLU (settable choice) activation
+ functions and with biases in hidden layers.
 */
 class FullyConnectedNeuralNetwork {
  public:
     explicit FullyConnectedNeuralNetwork(
-        std::vector<uint> n_neurons_in_each_layer);
+        std::vector<uint> n_neurons_in_each_layer,
+        std::string activation_functions);
+    float activationFunction(
+        const float& input);
+    float activationFunctionDerivative(
+        const float& input);
     void backPropagation(
         const Tensor1D* target_outputs,
         const float& learning_rate);
@@ -72,11 +93,6 @@ class FullyConnectedNeuralNetwork {
         const bool& verbose);
 
  private:
-    // architecture hyperparameters, specifically number of layers and number
-    // of neurons each:
-    std::vector<uint> architecture;
-    // layers' weights (including biases):
-    std::vector<Tensor2D*> weights;
     // layers' action potentials, i.e. intermediate linear combination results
     // before activation function application:
     std::vector<Tensor1D*> action_potentials;
@@ -85,19 +101,35 @@ class FullyConnectedNeuralNetwork {
     std::vector<Tensor1D*> activations;
     // errors on layers' activations:
     std::vector<Tensor1D*> activation_errors;
+    // architecture hyperparameter specifying the kind of activation functions
+    // to use (whether ReLUs or sigmoids):
+    std::string activation_functions_kind;
+    // architecture hyperparameters specifying the number of layers and the
+    // number of neurons each:
+    std::vector<uint> n_neurons_in_each_layer;
+    // layers' weights (including biases):
+    std::vector<Tensor2D*> weights;
 };
 
 /**
  Build the neural network architecture components.
 */
 FullyConnectedNeuralNetwork::FullyConnectedNeuralNetwork(
-    std::vector<uint> n_neurons_in_each_layer
+    std::vector<uint> n_neurons_in_each_layer,
+    std::string activation_functions
 ) {
+    // asserting that a valid activation functions' kind is given:
+    assert((activation_functions == "ReLU")
+            || (activation_functions == "sigmoid"));
+
+    // setting the kind of activation functions employed:
+    this->activation_functions_kind = activation_functions;
+
     // adding the last layer's number of neurons, set to 1 for the
     // sinlge-output regression problem of interest:
     n_neurons_in_each_layer.push_back(1);
 
-    this->architecture = n_neurons_in_each_layer;
+    this->n_neurons_in_each_layer = n_neurons_in_each_layer;
     uint n_layers = n_neurons_in_each_layer.size();
 
     // making random weight initialization reproducible:
@@ -186,6 +218,29 @@ FullyConnectedNeuralNetwork::FullyConnectedNeuralNetwork(
 }
 
 /**
+ Compute the activation function value for the given input, with the kind of
+ activation function employed determined by the set architectural choice:
+*/
+float FullyConnectedNeuralNetwork::activationFunction(
+    const float& input
+) {
+    return ((this->activation_functions_kind == "sigmoid")
+            ? sigmoidFunction(input) : ReLUFunction(input));
+}
+
+/**
+ Compute the derivative of the activation function value for the given input,
+ with the kind of activation function employed, and so of its derivative,
+ determined by the set architectural choice:
+*/
+float FullyConnectedNeuralNetwork::activationFunctionDerivative(
+    const float& input
+) {
+    return ((this->activation_functions_kind == "sigmoid")?
+        sigmoidFunctionDerivative(input) : ReLUFunctionDerivative(input));
+}
+
+/**
  Compute the loss value comparing the last layer outputs to the target
  predictions, compute the gradient of such loss with respect to each model
  weight and update these latter accordingly, to carry out a single step of
@@ -198,7 +253,7 @@ void FullyConnectedNeuralNetwork::backPropagation(
     const Tensor1D* target_outputs,
     const float& learning_rate
 ) {
-    uint last_hidden_layer_index = this->architecture.size() - 2;
+    uint last_hidden_layer_index = this->n_neurons_in_each_layer.size() - 2;
 
     // computing the error on the model outputs, i.e. on the activations of
     // the last layer, so as to start backpropagation, propagating it through
@@ -281,7 +336,7 @@ float FullyConnectedNeuralNetwork::computeLossGradientWRTWeight(
     const uint& column_indx
 ) {
     return this->activation_errors[layer_indx + 1]->coeffRef(column_indx)
-        * derivativeOfSigmoidActivationFunction(
+        * this->activationFunctionDerivative(
             this->action_potentials[layer_indx + 1]->coeffRef(column_indx))
         * this->activations[layer_indx]->coeffRef(row_indx);
 }
@@ -351,7 +406,7 @@ void FullyConnectedNeuralNetwork::evaluate(
 void FullyConnectedNeuralNetwork::forwardPropagation(
     const Tensor1D* inputs
 ) {
-    int n_layers = this->architecture.size();
+    int n_layers = this->n_neurons_in_each_layer.size();
 
     // setting the input layer values as the inputs - accessing a block of
     // size (p,q) starting at (i,j) via ".block(i,j,p,q)" for tensors:
@@ -373,9 +428,9 @@ void FullyConnectedNeuralNetwork::forwardPropagation(
         if (i != n_layers - 1) {
             // applying the activation function to the linear combination
             // result:
-            uint n_neurons = this->architecture[i];
+            uint n_neurons = this->n_neurons_in_each_layer[i];
             this->activations[i]->block(0, 0, 1, n_neurons).unaryExpr(
-                std::ptr_fun(sigmoidActivationFunction));
+                std::ptr_fun(ReLUFunction));  // FIXME
         }
     }
 }
