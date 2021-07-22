@@ -422,7 +422,8 @@ void FullyConnectedNeuralNetwork::forwardPropagation(
             // result:
             uint n_neurons = this->n_neurons_in_each_layer[i];
             this->activations[i]->block(0, 0, 1, n_neurons).unaryExpr(
-                std::ptr_fun(ReLUFunction));  // FIXME
+                std::bind(&FullyConnectedNeuralNetwork::activationFunction,
+                          this, std::placeholders::_1));
         }
     }
 }
