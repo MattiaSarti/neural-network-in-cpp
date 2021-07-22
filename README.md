@@ -66,6 +66,3 @@ g++ ...
 - **Python**
     - flake8 3.8.4 compliant ✔
     - pylint 2.5.3 compliant ✔
-
-TODOs:
-- let choose among ReLU and Sigmoid, and make the chosen one as a static member called "activation function"
