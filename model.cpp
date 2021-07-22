@@ -472,7 +472,8 @@ void FullyConnectedNeuralNetwork::updateWeightViaSGD(
     const uint& column_indx,
     const float& learning_rate
 ) {
-    this->weights[layer_indx]->coeffRef(row_indx, column_indx) += learning_rate
+    // TODO(me): understand
+    this->weights[layer_indx]->coeffRef(row_indx, column_indx) -= learning_rate
         * this->computeLossGradientWRTWeight(layer_indx, row_indx,
                                              column_indx);
 }
