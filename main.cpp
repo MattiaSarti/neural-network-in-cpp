@@ -9,11 +9,13 @@
 
 
 // architecture hyperparameters:
-const std::string ACTIVATION_FUNCTIONS_NAME = "ReLU";
+const auto ACTIVATION_FUNCTIONS_NAME = "ReLU";
 const std::vector<uint> N_NEURONS_IN_LAYERS = {2, 8, 8, 6, 4};
 // training hyperparameters:
 const float LEARNING_RATE = 0.00001;
-const uint N_EPOCHS = 100;
+const uint N_EPOCHS = 1;
+// display options:
+const bool VERBOSE = false;
 
 
 int main() {
@@ -40,7 +42,8 @@ int main() {
 
     // evaluating the model on the validation set before training:
     std::string results_path = "validation_set_predictions_before_training.csv";
-    model.evaluate(validation_samples, validation_labels, results_path, false);
+    model.evaluate(validation_samples, validation_labels, results_path,
+                   VERBOSE);
 
     std::cout << "- - - - - - - - - - - -" << std::endl;
 
@@ -52,7 +55,8 @@ int main() {
 
     // evaluating the model on the validation set after training:
     results_path = "validation_set_predictions_after_training.csv";
-    model.evaluate(validation_samples, validation_labels, results_path, false);
+    model.evaluate(validation_samples, validation_labels, results_path,
+                   VERBOSE);
 
     std::cout << "- - - - - - - - - - - -" << std::endl;
 
