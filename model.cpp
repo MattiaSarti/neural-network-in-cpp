@@ -448,8 +448,16 @@ Tensor1D FullyConnectedNeuralNetwork::squaredErrorLossDerivative(
     const Tensor1D* predicted_output,
     const Tensor1D* target_output
 ) {
-    // return (*target_output - *predicted_output).array().pow(2);
-    return *predicted_output;  // TODO(me)
+    /*
+    NOTE - the mathematical derivation follows:
+
+    d/dx((x - y)**2) = d/dx(x**2 -2xy + y**2) =
+     = d/dx(x**2) + d/dx(-2xy) + d/dx(y**2)) =
+     = 2x +(-2y) + 0 = 2x - 2y = 2(x - y),
+
+    where x = predicted_output, y = target_output ❏
+    */
+    return 2 * (*predicted_output - *target_output);
 }
 
 /**
