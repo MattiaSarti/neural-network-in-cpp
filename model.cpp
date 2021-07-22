@@ -10,30 +10,10 @@
 
 
 /**
- Compute the value of the squared difference loss (i.e. squareq error) between
- the predicted output and the expected, target output.
- NOTE: the derivative of such loss with respect to the predicted output is
- unitary and simplifies computations. TODO(me): update
-*/
-Tensor1D errorLoss(
-    const Tensor1D* predicted_output,
-    const Tensor1D* target_output
-) {
-    return (*target_output - *predicted_output).array().pow(2);
-}
-
-/**
  Compute the value of the ReLU function for the given input.
 */
 float ReLUFunction(const float& input) {
     return std::max(input, static_cast<float>(0));
-}
-
-/**
- Compute the value of the sigmoid function for the given input.
-*/
-float sigmoidFunction(const float& input) {
-    return 1 / (1 + exp(-input));
 }
 
 /**
@@ -42,6 +22,13 @@ float sigmoidFunction(const float& input) {
 */
 float ReLUFunctionDerivative(const float& input) {
     return ((input > 0) ? static_cast<float>(1) : static_cast<float>(0));
+}
+
+/**
+ Compute the value of the sigmoid function for the given input.
+*/
+float sigmoidFunction(const float& input) {
+    return 1 / (1 + exp(-input));
 }
 
 /**
@@ -61,7 +48,7 @@ class FullyConnectedNeuralNetwork {
  public:
     explicit FullyConnectedNeuralNetwork(
         std::vector<uint> n_neurons_in_each_layer,
-        std::string activation_functions);
+        const std::string& activation_functions);
     float activationFunction(
         const float& input);
     float activationFunctionDerivative(
@@ -80,6 +67,12 @@ class FullyConnectedNeuralNetwork {
         const bool& verbose);
     void forwardPropagation(
         const Tensor1D* inputs);
+    static Tensor1D squaredErrorLoss(
+        const Tensor1D* predicted_output,
+        const Tensor1D* target_output);
+    static Tensor1D squaredErrorLossDerivative(
+        const Tensor1D* predicted_output,
+        const Tensor1D* target_output);
     void updateWeightViaSGD(
         const uint& layer_indx,
         const uint& row_indx,
@@ -116,7 +109,7 @@ class FullyConnectedNeuralNetwork {
 */
 FullyConnectedNeuralNetwork::FullyConnectedNeuralNetwork(
     std::vector<uint> n_neurons_in_each_layer,
-    std::string activation_functions
+    const std::string& activation_functions
 ) {
     // asserting that a valid activation functions' kind is given:
     assert((activation_functions == "ReLU")
@@ -191,7 +184,6 @@ FullyConnectedNeuralNetwork::FullyConnectedNeuralNetwork(
                 ->coeffRef(n_neurons_current_layer - 1) = 1.0;
             // fictitious, constant (+1) input for adding bias to the
             // following layer:
-            // TODO(me): understand: why also on action potentials?
             this->activations.back()
                 ->coeffRef(n_neurons_current_layer - 1) = 1.0;
 
@@ -258,8 +250,8 @@ void FullyConnectedNeuralNetwork::backPropagation(
     // computing the error on the model outputs, i.e. on the activations of
     // the last layer, so as to start backpropagation, propagating it through
     // previous layers in turn, backwards:
-    (*(this->activation_errors.back())) = errorLoss(this->activations.back(),
-                                                    target_outputs);
+    (*(this->activation_errors.back())) = squaredErrorLoss(
+        this->activations.back(), target_outputs);
 
     // for each layer but the output one, i.e. for each layer with a layer
     // ahead to backpropagate errors from (from the input layer to the last
@@ -355,7 +347,7 @@ void FullyConnectedNeuralNetwork::evaluate(
 
     std::string space = "       ";
     std::ofstream file_stream(output_path);
-    float cumulative_loss = 0;
+    long double cumulative_loss = 0;
 
     if (verbose) {
         std::cout << "evaluating predictions for every validation sample:"
@@ -376,7 +368,7 @@ void FullyConnectedNeuralNetwork::evaluate(
             std::cout << space << "vs" << space;
             std::cout << "actual output: " << *(this->activations.back());
             std::cout << space << "->" << space;
-            std::cout << "loss value: " << errorLoss(
+            std::cout << "loss value: " << squaredErrorLoss(
                 this->activations.back(), validation_labels[sample_indx]);
             std::cout << std::endl;
         }
@@ -384,8 +376,8 @@ void FullyConnectedNeuralNetwork::evaluate(
         // cumulating the loss value for the current sample to eventually
         // compute the average loss - MAE (Mean Absolute Error) employed:
         cumulative_loss += abs(
-            errorLoss(this->activations.back(),
-                      validation_labels[sample_indx])
+            squaredErrorLoss(this->activations.back(),
+                             validation_labels[sample_indx])
             .value());
 
         // saving the prediction for the current sample to the output file:
@@ -433,6 +425,30 @@ void FullyConnectedNeuralNetwork::forwardPropagation(
                 std::ptr_fun(ReLUFunction));  // FIXME
         }
     }
+}
+
+/**
+ Compute the value of the squared difference loss (i.e. squared error) between
+ the predicted output and the expected, target output.
+*/
+Tensor1D FullyConnectedNeuralNetwork::squaredErrorLoss(
+    const Tensor1D* predicted_output,
+    const Tensor1D* target_output
+) {
+    return (*target_output - *predicted_output).array().pow(2);
+}
+
+/**
+ Compute the derivative value of the squared difference loss (i.e. squared
+ error) between the predicted output and the expected, target output with
+ respect to the predicted output.
+*/
+Tensor1D FullyConnectedNeuralNetwork::squaredErrorLossDerivative(
+    const Tensor1D* predicted_output,
+    const Tensor1D* target_output
+) {
+    // return (*target_output - *predicted_output).array().pow(2);
+    return *predicted_output;  // TODO(me)
 }
 
 /**
@@ -493,8 +509,8 @@ void FullyConnectedNeuralNetwork::train(
                 std::cout << "\t" << "actual output: "
                     << *(this->activations.back()) << std::endl;
                 std::cout << "\t" << "loss value: "
-                    << errorLoss(this->activations.back(),
-                                 training_labels[sample_indx])
+                    << squaredErrorLoss(this->activations.back(),
+                                        training_labels[sample_indx])
                     << std::endl;
                 std::cout << "\t" << "weights updated accordingly ✓"
                     << std::endl;
