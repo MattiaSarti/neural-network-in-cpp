@@ -11,7 +11,7 @@ A C++ implementation of a feed-forward, fully-connected, multi-layer neural netw
 
 ## My Attitude
 
-I went through [an already-existing implementation](https://www.geeksforgeeks.org/ml-neural-network-implementation-in-c-from-scratch/) first and then I 1) modified it to make it more efficient, 2) documented it (well-commented code) and 3) extended it by adding training and evaluation on such a self-made dataset, as an exercise to learn about C++ (and neural networks).
+I went through [an already-existing implementation](https://www.geeksforgeeks.org/ml-neural-network-implementation-in-c-from-scratch/) first and then I 1) extended it, 2) made it more efficient, 3) documented it (well-commented code) and 4) added training and evaluation on such a self-made dataset, as an exercise to learn about C++ (and neural networks).
 
 
 ## How to Reproduce Results
