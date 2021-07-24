@@ -49,7 +49,7 @@ int main() {
 
     // training the model on the training set:
     model.train(training_samples, training_labels, LEARNING_RATE, N_EPOCHS,
-        false);
+        VERBOSE);
 
     std::cout << "- - - - - - - - - - - -" << std::endl;
 
