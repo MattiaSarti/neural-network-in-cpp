@@ -54,12 +54,13 @@ class FullyConnectedNeuralNetwork {
     float activationFunctionDerivative(
         const float& input);
     void backPropagation(
-        const Tensor1D* target_outputs,
+        const Tensor1D* target_output,
         const float& learning_rate);
     float computeLossGradientWRTWeight(
         const uint& layer_indx,
         const uint& row_indx,
-        const uint& column_indx);
+        const uint& column_indx,
+        const Tensor1D* target_output);
     void evaluate(
         const std::vector<Tensor1D*>& validation_samples,
         const std::vector<Tensor1D*>& validation_labels,
@@ -70,14 +71,15 @@ class FullyConnectedNeuralNetwork {
     static Tensor1D squaredErrorLoss(
         const Tensor1D* predicted_output,
         const Tensor1D* target_output);
-    static Tensor1D squaredErrorLossDerivative(
-        const Tensor1D* predicted_output,
-        const Tensor1D* target_output);
+    static float squaredErrorLossDerivative(
+        const float& predicted_output,
+        const float& target_output);
     void updateWeightViaSGD(
         const uint& layer_indx,
         const uint& row_indx,
         const uint& column_indx,
-        const float& learning_rate);
+        const float& learning_rate,
+        const Tensor1D* target_output);
     void train(
         const std::vector<Tensor1D*>& inputs,
         const std::vector<Tensor1D*>& targets,
@@ -228,8 +230,8 @@ float FullyConnectedNeuralNetwork::activationFunction(
 float FullyConnectedNeuralNetwork::activationFunctionDerivative(
     const float& input
 ) {
-    return ((this->activation_functions_kind == "sigmoid")?
-        sigmoidFunctionDerivative(input) : ReLUFunctionDerivative(input));
+    return ((this->activation_functions_kind == "sigmoid")
+        ? sigmoidFunctionDerivative(input) : ReLUFunctionDerivative(input));
 }
 
 /**
@@ -242,7 +244,7 @@ float FullyConnectedNeuralNetwork::activationFunctionDerivative(
  with mini-batched of size 1.
 */
 void FullyConnectedNeuralNetwork::backPropagation(
-    const Tensor1D* target_outputs,
+    const Tensor1D* target_output,
     const float& learning_rate
 ) {
     uint last_hidden_layer_index = this->n_neurons_in_each_layer.size() - 2;
@@ -251,7 +253,7 @@ void FullyConnectedNeuralNetwork::backPropagation(
     // the last layer, so as to start backpropagation, propagating it through
     // previous layers in turn, backwards:
     (*(this->activation_errors.back())) = squaredErrorLoss(
-        this->activations.back(), target_outputs);
+        this->activations.back(), target_output);
 
     // for each layer but the output one, i.e. for each layer with a layer
     // ahead to backpropagate errors from (from the input layer to the last
@@ -292,16 +294,16 @@ void FullyConnectedNeuralNetwork::backPropagation(
                     // and column positions, i.e. the weight representing the
                     // connection from the considered neuron of the current
                     // layer to the considered neuron of the following layer:
-                    this->updateWeightViaSGD(layer_indx, row_indx,
-                                             column_indx, learning_rate);
+                    this->updateWeightViaSGD(layer_indx, row_indx, column_indx,
+                                             learning_rate, target_output);
                 }
 
             // for the last hidden layer:
             } else {
                 // for each column of the current layer weight matrix, i.e.
                 // for each neuron of the following layer - biases are not
-                // present in the output layer?!:
-                // TODO(me): understand
+                // present in the output layer, so in the current weight
+                // matrix:
                 for (uint column_indx = 0; column_indx < n_columns;
                         ++column_indx
                 ) {
@@ -309,8 +311,8 @@ void FullyConnectedNeuralNetwork::backPropagation(
                     // and column positions, i.e. the weight representing the
                     // connection from the considered neuron of the current
                     // layer to the considered neuron of the following layer:
-                    this->updateWeightViaSGD(layer_indx, row_indx,
-                                             column_indx, learning_rate);
+                    this->updateWeightViaSGD(layer_indx, row_indx, column_indx,
+                                             learning_rate, target_output);
                 }
             }
         }
@@ -325,12 +327,42 @@ void FullyConnectedNeuralNetwork::backPropagation(
 float FullyConnectedNeuralNetwork::computeLossGradientWRTWeight(
     const uint& layer_indx,
     const uint& row_indx,
-    const uint& column_indx
+    const uint& column_indx,
+    const Tensor1D* target_output
 ) {
-    return this->activation_errors[layer_indx + 1]->coeffRef(column_indx)
-        * this->activationFunctionDerivative(
-            this->action_potentials[layer_indx + 1]->coeffRef(column_indx))
-        * this->activations[layer_indx]->coeffRef(row_indx);
+    /*
+    NOTE - the mathematical formulation of Chain Rule follows:
+
+    d/dw_n(l) = d/dw_n(p_n) * d/dp_n(a_n) * d/da_n(l) =
+              = d/dw_n(p_n) * 1 * squaredErrorLossDerivative =
+                { a_n-1 * 1 * squaredErrorLossDerivative     if w_n != bias }
+              = {                                                           }
+                { 1 * 1 * squaredErrorLossDerivative         if w_n == bias }
+        for the output layer (n == N),
+
+    d/dw_n(l) = d/dw_n(p_n) * d/dp_n(a_n) * d/da_n(p_n+1) = 
+              = d/dw_n(p_n) * activationFunctionDerivative * d/da_n(p_n+1) =
+                { a_n-1 * activationFunctionDerivative * d/da_n(p_n+1) if w_n != bias }
+              = {                                                           }
+                { 1 * activationFunctionDerivative * d/da_n(p_n+1)     if w_n == bias }
+         for the hidden layers (N < n < 0),    
+
+    where w_n = weight of n-th layer, l = loss, p = action potential of n-th
+     layer, a = activation of n-th layer ❏
+    */
+   // TODO(me): update biases, which are never updated
+   // TODO(me): introduce and distinguish the last layer update
+   if (layer_indx != this->n_neurons_in_each_layer[-2]) {
+        return - this->activation_errors[layer_indx + 1]->coeffRef(column_indx)
+            * this->activationFunctionDerivative(
+                this->action_potentials[layer_indx + 1]->coeffRef(column_indx))
+            * this->activations[layer_indx]->coeffRef(row_indx);
+    } else {
+        return - this->squaredErrorLossDerivative(
+                this->action_potentials[layer_indx + 1]->coeffRef(column_indx),
+                target_output->coeffRef(0))
+            * this->activations[layer_indx]->coeffRef(row_indx);
+    }
 }
 
 /**
@@ -444,9 +476,9 @@ Tensor1D FullyConnectedNeuralNetwork::squaredErrorLoss(
  error) between the predicted output and the expected, target output with
  respect to the predicted output.
 */
-Tensor1D FullyConnectedNeuralNetwork::squaredErrorLossDerivative(
-    const Tensor1D* predicted_output,
-    const Tensor1D* target_output
+float FullyConnectedNeuralNetwork::squaredErrorLossDerivative(
+    const float& predicted_output,
+    const float& target_output
 ) {
     /*
     NOTE - the mathematical derivation follows:
@@ -457,25 +489,7 @@ Tensor1D FullyConnectedNeuralNetwork::squaredErrorLossDerivative(
 
     where x = predicted_output, y = target_output ❏
     */
-    return 2 * (*predicted_output - *target_output);
-}
-
-/**
- Update the selected weight, which is individuated by its (starting, not
- ending) layer index and its position in such layer weight matrix, to carry
- out a step of Stochastic Gradient Descent modulated by the given learning
- rate.
-*/
-void FullyConnectedNeuralNetwork::updateWeightViaSGD(
-    const uint& layer_indx,
-    const uint& row_indx,
-    const uint& column_indx,
-    const float& learning_rate
-) {
-    // TODO(me): understand
-    this->weights[layer_indx]->coeffRef(row_indx, column_indx) -= learning_rate
-        * this->computeLossGradientWRTWeight(layer_indx, row_indx,
-                                             column_indx);
+    return 2 * (predicted_output - target_output);
 }
 
 /**
@@ -524,6 +538,14 @@ void FullyConnectedNeuralNetwork::train(
                     << std::endl;
                 std::cout << "\t" << "weights updated accordingly ✓"
                     << std::endl;
+                // re-propagating the sample through the network to evaluate
+                // the new loss value, after the weight update:
+                this->forwardPropagation(training_samples[sample_indx]);
+                std::cout << "\t" << "updated loss value: "
+                    << squaredErrorLoss(this->activations.back(),
+                                        training_labels[sample_indx])
+                    << std::endl;
+                std::cout << "__________________________" << std::endl;
             }
         }
     }
