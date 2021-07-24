@@ -18,9 +18,9 @@
 #include <eigen3/Eigen/Eigen>
 
 
-typedef Eigen::MatrixXf     Tensor2D;
-typedef Eigen::RowVectorXf  Tensor1D;
-typedef unsigned int        uint;
+using Tensor2D = Eigen::MatrixXf;
+using Tensor1D = Eigen::RowVectorXf;
+using uint = unsigned int;
 
 
 #endif
