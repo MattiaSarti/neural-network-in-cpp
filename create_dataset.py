@@ -16,8 +16,8 @@ from numpy.random import seed, shuffle
 from sklearn.datasets import make_swiss_roll
 
 
-GAUSSIAN_NOISE_STD = 1
-N_SAMPLES = 600  # 80
+GAUSSIAN_NOISE_STD = 1.2
+N_SAMPLES = 600
 SEED = 0
 VALIDATION_AMOUNT = 0.3
 
