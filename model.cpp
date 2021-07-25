@@ -320,7 +320,7 @@ float FullyConnectedNeuralNetwork::computeLossGradientWRTWeight(
         ) {
             activation_derivative += this
                 ->action_potentials_gradients[actual_layer_indx + 1]
-                    ->coeffRef(current_neuron_indx)
+                    ->coeffRef(following_neuron_indx)
                 * this->weights[actual_layer_indx + 1]
                     ->coeffRef(actual_layer_indx, following_neuron_indx);
         }
@@ -534,11 +534,6 @@ void FullyConnectedNeuralNetwork::train(
             // layers' activations sequentially:
             this->forwardPropagation(training_samples[sample_indx]);
 
-            // backward propagation of the loss gradients through the network
-            // with respect to the different weights eventually updating them
-            // accordingly:
-            this->backPropagation(training_labels[sample_indx], learning_rate);
-
             if (verbose) {
                 std::cout << "\t" << "sample features: "
                     << *training_samples[sample_indx] << std::endl;
@@ -551,6 +546,14 @@ void FullyConnectedNeuralNetwork::train(
                     << squaredErrorLoss(this->activations.back(),
                                         training_labels[sample_indx])
                     << std::endl;
+            }
+
+            // backward propagation of the loss gradients through the network
+            // with respect to the different weights eventually updating them
+            // accordingly:
+            this->backPropagation(training_labels[sample_indx], learning_rate);
+
+            if (verbose) {
                 std::cout << "\t" << "weights updated accordingly ✓"
                     << std::endl;
                 // re-propagating the sample through the network to evaluate
