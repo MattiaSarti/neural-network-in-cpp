@@ -310,8 +310,8 @@ float FullyConnectedNeuralNetwork::computeLossGradientWRTWeight(
     // propagate backwards such gradient through the previous layers, later, as
     // a starting point to compute the gradients of the previous layer's
     // weights via Chain Rule:
-    // for the hidden layers:
     if (actual_layer_indx != this->n_neurons_in_each_layer.size() - 2) {
+        // for the hidden layers:
         float activation_derivative = 0;
 
         for (uint following_neuron_indx = 0; following_neuron_indx <
@@ -330,8 +330,8 @@ float FullyConnectedNeuralNetwork::computeLossGradientWRTWeight(
                 * this->activationFunctionDerivative(
                     this->action_potentials[actual_layer_indx]
                         ->coeffRef(current_neuron_indx));
-    // for the output layer:
     } else {
+        // for the output layer:
         this->action_potentials_gradients[actual_layer_indx]
             ->coeffRef(current_neuron_indx) = this->squaredErrorLossDerivative(
                 this->action_potentials[actual_layer_indx]
@@ -341,9 +341,16 @@ float FullyConnectedNeuralNetwork::computeLossGradientWRTWeight(
 
     // computing the loss gradient with respect to the considered weight of
     // the current layer:
-       float loss_gradient_wrt_weight = 
-        this->activations[actual_layer_indx - 1]
-            ->coeffRef(previous_neuron_indx)
+    float previous_activation;
+    if (actual_layer_indx != 0) {
+        // when the previous layer is not the input layer:
+        previous_activation = this->activations[actual_layer_indx - 1]
+            ->coeffRef(previous_neuron_indx);
+    } else {
+        // when the previous layer is the input layer:
+        previous_activation = this->inputs->coeffRef(previous_neuron_indx);
+    }
+    float loss_gradient_wrt_weight = previous_activation
         * this->action_potentials_gradients[actual_layer_indx]
             ->coeffRef(current_neuron_indx);
 
