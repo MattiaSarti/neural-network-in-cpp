@@ -159,7 +159,7 @@ FullyConnectedNeuralNetwork::FullyConnectedNeuralNetwork(
         this->action_potentials.push_back(
             new Tensor1D(n_actual_neurons_current_layer));
         this->action_potentials_gradients.push_back(
-            new Tensor1D(n_neurons_current_layer));
+            new Tensor1D(n_actual_neurons_current_layer));
 
         // declaring the current layer's activations:
         this->activations.push_back(
@@ -281,9 +281,9 @@ float FullyConnectedNeuralNetwork::computeLossGradientWRTWeight(
     d/dw_n(l) = d/dw_n(p_n) * d/dp_n(l) =
               = d/dw_n(p_n) * d/dp_n(a_n) * d/da_n(l) =
               = d/dw_n(p_n) * 1 * squaredErrorLossDerivative =
-              = a_n-1 * 1 * squaredErrorLossDerivative
-              in general
-               (1 * 1 * squaredErrorLossDerivative    when w_n = bias)
+              = a_n-1 * 1 * squaredErrorLossDerivative    in general
+
+            ( = 1 * 1 * squaredErrorLossDerivative    when w_n = bias)
 
         for the output layer (n == N),
 
@@ -293,8 +293,8 @@ float FullyConnectedNeuralNetwork::computeLossGradientWRTWeight(
               = a_n-1 * activationFunctionDerivative *
                 * ⨊_i(d/dp_n+1_i(l) * d/da_n(p_n+1_i))
               = a_n-1 * activationFunctionDerivative *
-                * ⨊_i(d/dp_n+1_i(l) * w_n+1_i)
-              in general
+                * ⨊_i(d/dp_n+1_i(l) * w_n+1_i)    in general
+
             ( = 1 * activationFunctionDerivative *
                 * ⨊_i(d/dp_n+1_i(l) * w_n+1_i)    when w_n = bias)
 
@@ -416,42 +416,52 @@ void FullyConnectedNeuralNetwork::forwardPropagation(
     const Tensor1D* inputs
 ) {
     // number of layers without considering the input one:
-    int n_actual_layers = this->n_neurons_in_each_layer.size();
+    int n_actual_layers = this->n_neurons_in_each_layer.size() - 1;
 
-    // setting the input layer values as the inputs - accessing a block of
-    // size (p, q) starting at (i, j) via ".block(i, j, p, q)" for tensors:
-    uint n_input_neurons = this->inputs->size();
-    this->inputs->block(0, 0, 1, n_input_neurons - 1) = *inputs;
+    // setting the input layer values of all the input neurons but the last,
+    // fictitious one representing the constant bias multiplier (+1) as the
+    // inputs for - accessing a block of size (p, q) starting at (i, j) via
+    // ".block(i, j, p, q)" for tensors:
+    uint n_actual_neurons = this->n_neurons_in_each_layer[0];
+    this->inputs->block(0, 0, 1, n_actual_neurons) = *inputs;
 
     // propagating the inputs to the output by computing the activations of
     // each neuron in each layer from the previous layer's activations by
     // linearly combining the neuron inputs with the respective weights first
     // and then applying the activation function, layer by layer:
-    for (int layer_indx = 1; layer_indx < n_actual_layers; ++layer_indx) {
+    for (uint actual_layer_indx = 0; actual_layer_indx < n_actual_layers; ++actual_layer_indx) {
+        n_actual_neurons = this->n_neurons_in_each_layer[actual_layer_indx + 1];
+
         // computing the result of the linear combination of the previous
         // layer's activations (or of the inputs, in case the input layer is
         // the previous one) with weights, i.e. the action potential:
-        if (layer_indx != 0) {
-            (*(this->action_potentials[layer_indx])) = (*(this->
-                activations[layer_indx - 1])) * (*(this->weights[layer_indx]));
+        if (actual_layer_indx != 0) {
+            (*(this->action_potentials[actual_layer_indx])) = (*(this->
+                    activations[actual_layer_indx - 1]))
+                * (*(this->weights[actual_layer_indx]));
         } else {
-            (*(this->action_potentials[layer_indx])) = (*(this->
-                inputs)) * (*(this->weights[layer_indx]));
+            (*(this->action_potentials[actual_layer_indx])) = (*(this->
+                inputs)) * (*(this->weights[actual_layer_indx]));
         }
 
         // usign the action potentials as starting values for the activations:
-        (*(this->activations[layer_indx])) = (*(this
-            ->action_potentials[layer_indx]));
+        (this->activations[actual_layer_indx])
+            ->block(0, 0, 1, n_actual_neurons) = (*(this->action_potentials[
+                actual_layer_indx]));
 
         // for all layers but the last one, whose output does not require an
         // activation function:
-        if (layer_indx != n_actual_layers - 1) {
+        if (actual_layer_indx != (n_actual_layers - 1)) {
             // applying the activation function to the linear combination
-            // result:
-            uint n_neurons = this->n_neurons_in_each_layer[layer_indx];
-            this->activations[layer_indx]->block(0, 0, 1, n_neurons).unaryExpr(
-                std::bind(&FullyConnectedNeuralNetwork::activationFunction,
-                          this, std::placeholders::_1));
+            // results (not to the activation representing the fictitious,
+            // constant bias multiplier for the following layer (+1)):
+            this->activations[actual_layer_indx]
+                ->block(0, 0, 1, n_actual_neurons) = this
+                    ->activations[actual_layer_indx]
+                        ->block(0, 0, 1, n_actual_neurons).unaryExpr(std::bind(
+                            &FullyConnectedNeuralNetwork::activationFunction,
+                            this,
+                            std::placeholders::_1));
         }
     }
 }
