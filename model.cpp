@@ -91,11 +91,11 @@ class FullyConnectedNeuralNetwork {
     // layers' action potentials, i.e. intermediate linear combination results
     // before activation function application:
     std::vector<Tensor1D*> action_potentials;
+    // loss gradients with respect to layers' action potentials:
+    std::vector<Tensor1D*> action_potentials_gradients;
     // layers' activations, i.e. results of linear combination with weights
     // followed by activation function application:
     std::vector<Tensor1D*> activations;
-    // loss gradients with respect to layers' activations:
-    std::vector<Tensor1D*> activations_gradients;
     // architecture hyperparameter specifying the kind of activation functions
     // to use (whether ReLUs or sigmoids):
     std::string activation_functions_kind;
@@ -154,14 +154,15 @@ FullyConnectedNeuralNetwork::FullyConnectedNeuralNetwork(
         uint n_neurons_previous_layer = n_neurons_in_each_layer[
             layer_indx - 1] + 1;
 
-        // declaring the current layer's action potentials:
+        // declaring the current layer's action potentials and their loss
+        // gradients:
         this->action_potentials.push_back(
             new Tensor1D(n_actual_neurons_current_layer));
-
-        // declaring the current layer's activations and their loss gradients:
-        this->activations.push_back(
+        this->action_potentials_gradients.push_back(
             new Tensor1D(n_neurons_current_layer));
-        this->activations_gradients.push_back(
+
+        // declaring the current layer's activations:
+        this->activations.push_back(
             new Tensor1D(n_neurons_current_layer));
 
         // declaring the weight matrix of the current layer, the weights that
@@ -244,13 +245,6 @@ void FullyConnectedNeuralNetwork::backPropagation(
         uint n_neurons_current_layer = this->weights[actual_layer_indx]
             ->cols();
 
-        // TODO(me):
-        // computing the loss derivative with respect to the the activations of
-        // the current layer, so as to start backpropagation, propagating
-        // such loss gradient through the previous layers in turn, backwards, to
-        // reach each weight via Chain Rule:
-        activation_gradients[actual_layer_indx] = ;
-
         // for each row of the current layer weight matrix, i.e. for each
         // input neuron to the considered layer:
         for (uint previous_neuron_indx = 0; previous_neuron_indx
@@ -284,56 +278,76 @@ float FullyConnectedNeuralNetwork::computeLossGradientWRTWeight(
     /*
     NOTE - the mathematical formulation of Chain Rule follows:
 
-    d/dw_n(l) = d/dw_n(p_n) * d/dp_n(a_n) * d/da_n(l) =
+    d/dw_n(l) = d/dw_n(p_n) * d/dp_n(l) =
+              = d/dw_n(p_n) * d/dp_n(a_n) * d/da_n(l) =
               = d/dw_n(p_n) * 1 * squaredErrorLossDerivative =
               = a_n-1 * 1 * squaredErrorLossDerivative
               in general
-               (1 * 1 * squaredErrorLossDerivative if w_n = bias)
+               (1 * 1 * squaredErrorLossDerivative    when w_n = bias)
 
         for the output layer (n == N),
 
-    // TODO(me): update
-    d/dw_n(l) = d/dw_n(p_n) * d/dp_n(a_n) * d/da_n(p_n+1) = 
-              = d/dw_n(p_n) * activationFunctionDerivative * d/da_n(p_n+1) =
-              = a_n-1 * activationFunctionDerivative * d/da_n(p_n+1) 
+    d/dw_n(l) = d/dw_n(p_n) * d/dp_n(l) =
+              = d/dw_n(p_n) * d/dp_n(a_n) * d/da_n(l) =
+              = d/dw_n(p_n) * activationFunctionDerivative * d/da_n(l) =
+              = a_n-1 * activationFunctionDerivative *
+                * ⨊_i(d/dp_n+1_i(l) * d/da_n(p_n+1_i))
+              = a_n-1 * activationFunctionDerivative *
+                * ⨊_i(d/dp_n+1_i(l) * w_n+1_i)
               in general
-            ( = 1 * activationFunctionDerivative * d/da_n(p_n+1) if w_n = bias)
+            ( = 1 * activationFunctionDerivative *
+                * ⨊_i(d/dp_n+1_i(l) * w_n+1_i)    when w_n = bias)
 
         for the hidden layers (N < n < 0),
 
-    where w_n = weight of n-th layer, l = loss, p = action potential of n-th
-     layer, a = activation of n-th layer ❏
+    where  a = activation of n-th layer,
+           l = loss,
+           p = action potential of n-th layer,
+           w_n = weight of n-th layer                                   ❏
     */
-   float gradient;
+    // keeping track of the loss derivative with respect to the action
+    // potential of the current neuron in the considered layer so as to
+    // propagate backwards such gradient through the previous layers, later, as
+    // a starting point to compute the gradients of the previous layer's
+    // weights via Chain Rule:
+    // for the hidden layers:
+    if (actual_layer_indx != this->n_neurons_in_each_layer.size() - 2) {
+        float activation_derivative = 0;
 
-   if (actual_layer_indx != this->n_neurons_in_each_layer.size() - 2) {
-        gradient = 0;
         for (uint following_neuron_indx = 0; following_neuron_indx <
                 this->n_neurons_in_each_layer[actual_layer_indx + 2];
                 ++following_neuron_indx
         ) {
-            gradient += this->activation_gradients[actual_layer_indx]
-                ->coeffRef(current_neuron_indx)
-                * this->weight[actual_layer_indx + 1]
-                ->coeffRef(actual_layer_indx, following_neuron_indx);
+            activation_derivative += this
+                ->action_potentials_gradients[actual_layer_indx + 1]
+                    ->coeffRef(current_neuron_indx)
+                * this->weights[actual_layer_indx + 1]
+                    ->coeffRef(actual_layer_indx, following_neuron_indx);
         }
-        gradient = gradient
-            * this->activations[actual_layer_indx - 1]
-                ->coeffRef(previous_neuron_indx)
-            * this->activationFunctionDerivative(
-                this->action_potentials[actual_layer_indx]
-                    ->coeffRef(current_neuron_indx));
+
+        this->action_potentials_gradients[actual_layer_indx]
+            ->coeffRef(current_neuron_indx) = activation_derivative
+                * this->activationFunctionDerivative(
+                    this->action_potentials[actual_layer_indx]
+                        ->coeffRef(current_neuron_indx));
+    // for the output layer:
     } else {
-        gradient = 
-            this->activations[actual_layer_indx - 1]
-                ->coeffRef(previous_neuron_indx)
-            * this->squaredErrorLossDerivative(
+        this->action_potentials_gradients[actual_layer_indx]
+            ->coeffRef(current_neuron_indx) = this->squaredErrorLossDerivative(
                 this->action_potentials[actual_layer_indx]
                     ->coeffRef(current_neuron_indx),
                 target_output->coeffRef(0));
     }
 
-    return gradient;
+    // computing the loss gradient with respect to the considered weight of
+    // the current layer:
+       float loss_gradient_wrt_weight = 
+        this->activations[actual_layer_indx - 1]
+            ->coeffRef(previous_neuron_indx)
+        * this->action_potentials_gradients[actual_layer_indx]
+            ->coeffRef(current_neuron_indx);
+
+    return loss_gradient_wrt_weight;
 }
 
 /**
