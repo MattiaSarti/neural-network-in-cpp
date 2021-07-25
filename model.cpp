@@ -57,9 +57,9 @@ class FullyConnectedNeuralNetwork {
         const Tensor1D* target_output,
         const float& learning_rate);
     float computeLossGradientWRTWeight(
-        const uint& layer_indx,
-        const uint& row_indx,
-        const uint& column_indx,
+        const uint& actual_layer_indx,
+        const uint& previous_neuron_indx,
+        const uint& current_neuron_indx,
         const Tensor1D* target_output);
     void evaluate(
         const std::vector<Tensor1D*>& validation_samples,
@@ -75,9 +75,9 @@ class FullyConnectedNeuralNetwork {
         const float& predicted_output,
         const float& target_output);
     void updateWeightViaSGD(
-        const uint& layer_indx,
-        const uint& row_indx,
-        const uint& column_indx,
+        const uint& actual_layer_indx,
+        const uint& previous_neuron_indx,
+        const uint& current_neuron_indx,
         const float& learning_rate,
         const Tensor1D* target_output);
     void train(
@@ -94,11 +94,13 @@ class FullyConnectedNeuralNetwork {
     // layers' activations, i.e. results of linear combination with weights
     // followed by activation function application:
     std::vector<Tensor1D*> activations;
-    // errors on layers' activations:
-    std::vector<Tensor1D*> activation_errors;
+    // loss gradients with respect to layers' activations:
+    std::vector<Tensor1D*> activations_gradients;
     // architecture hyperparameter specifying the kind of activation functions
     // to use (whether ReLUs or sigmoids):
     std::string activation_functions_kind;
+    // inputs, i.e. feature values of the considered sample:
+    Tensor1D* inputs;
     // architecture hyperparameters specifying the number of layers and the
     // number of neurons each:
     std::vector<uint> n_neurons_in_each_layer;
@@ -130,83 +132,68 @@ FullyConnectedNeuralNetwork::FullyConnectedNeuralNetwork(
     // making random weight initialization reproducible:
     srand(static_cast<uint>(0));  // NOLINT(cert-msc32-c, cert-msc51-cpp)
 
+    // considering the input features as the input layer's values - and adding
+    // a fictitious, constant (+1) input for adding bias to the following
+    // layer's action potentials:
+    this->inputs = new Tensor1D(n_neurons_in_each_layer[0] + 1);
+    this->inputs->coeffRef(n_neurons_in_each_layer[0]) = 1.0;
+
     // initializing each layer's weights, action potentials, activations (i.e.
-    // outputs) and activations' errors:
-    for (uint layer_indx = 0; layer_indx < n_layers; ++layer_indx) {
-        bool is_not_first_layer = (!(layer_indx == 0));
+    // outputs) and gradients of the latter two:
+    for (uint layer_indx = 1; layer_indx < n_layers; ++layer_indx) {
         bool is_not_last_layer = (!(layer_indx == (n_layers - 1)));
-        uint n_actual_neurons_previous_layer;
         uint n_actual_neurons_current_layer = n_neurons_in_each_layer[
             layer_indx];
-        // including an additional neuron for the fictitious bias input for
-        // all layers but the output one, which is not subject to bias
-        // summation during the action potential computation:
+        // including an additional neuron whose activation is the fictitious
+        // bias input (to consider it as a weight) for the action potential
+        // computation for the next layer of the considered one for all the
+        // layers but the output one, which does not need one:
         uint n_neurons_current_layer = (is_not_last_layer
             ? (n_actual_neurons_current_layer + 1)
             : n_actual_neurons_current_layer);
+        uint n_neurons_previous_layer = n_neurons_in_each_layer[
+            layer_indx - 1] + 1;
 
         // declaring the current layer's action potentials:
         this->action_potentials.push_back(
+            new Tensor1D(n_actual_neurons_current_layer));
+
+        // declaring the current layer's activations and their loss gradients:
+        this->activations.push_back(
+            new Tensor1D(n_neurons_current_layer));
+        this->activations_gradients.push_back(
             new Tensor1D(n_neurons_current_layer));
 
-        // declaring the current layer's activations:
-        this->activations.push_back(new Tensor1D(n_neurons_current_layer));
+        // declaring the weight matrix of the current layer, the weights that
+        // connect the previous layer to the considered one - weight matrices
+        // are associated to each layer but one (they are in-between
+        // consecutive layers, connecting their neurons), so they are defined
+        // for each layer but the input one as referring to the previous layer
+        // as well - the number of neurons in the previous layer is
+        // extended taking into account the additional, fictitious input to
+        // consider the bias term in the weight matrix itself:
+        this->weights.push_back(
+            new Tensor2D(n_neurons_previous_layer,
+                         n_actual_neurons_current_layer));
+        // randomly initializing weights, sampling from a uniform distribution
+        // over the [-1;+1] interval - this initialization is overwritten for
+        // biases later in the constructor:
+        this->weights.back()->setRandom();
 
-        // declaring errors on the considered layer's activations:
-        this->activation_errors.push_back(
-            new Tensor1D(n_neurons_current_layer));
-
-        // weight matrices are associated to each layer but one (they are
-        // in-between consecutive layers, connecting their neurons), so they
-        // are defined for each layer but the input one referring to the
-        // previous layer as well:
-        if (is_not_first_layer) {
-            n_actual_neurons_previous_layer = n_neurons_in_each_layer[
-                layer_indx - 1];
-            // declaring the weights that connect the previous layer to the
-            // considered one - the number of neurons in the previous layer is
-            // extended considering an additional, fictitious input to
-            // consider the bias term in the weight matrix itself:
-            this->weights.push_back(
-                new Tensor2D(n_actual_neurons_previous_layer + 1,
-                             n_neurons_current_layer));
-            // randomly initializing weights, sampling from a uniform
-            // distribution over the [-1;+1] interval - NOTE: this
-            // initialization is overwritten for biases later in the
-            // constructor:
-            this->weights.back()->setRandom();
-        }
-
-        // for all layers but the last one, biases are considered as well:
+        // for all layers but the last one, biases are considered as additional
+        // neurons as well:
         if (is_not_last_layer) {
-            // fictitious, constant (+1) input for adding bias to the
-            // following layer:
-            // TODO(me): understand: why also on action potentials?
-            this->action_potentials.back()
-                ->coeffRef(n_neurons_current_layer - 1) = 1.0;
-            // fictitious, constant (+1) input for adding bias to the
-            // following layer:
+            // fictitious, constant (+1) activation as input for adding bias to
+            // the following layer's action potentials:
             this->activations.back()
                 ->coeffRef(n_neurons_current_layer - 1) = 1.0;
-
-            // for all the layers (among the considered ones, where biases are
-            // introduced) that also have weight matrices associated (i.e.
-            // discarding the input layer with the aforementioned convention):
-            if (is_not_first_layer) {
-                // initializg bias terms with zeros (overwriting the previous,
-                // general initialization, that was meant for the actual
-                // weights) by setting the last columns of the weight matrix,
-                // i.e. the weights that connect the fictitious bias inputs of
-                // the previous layer to the current layer's neurons, to all
-                // zeros, as appropriate for biases:
-                this->weights.back()->col(n_neurons_current_layer - 1).setZero();
-                // the bias term connecting the fictitious neuron of the
-                // previous layer to the fictitious neuron of the current
-                // layer is set to 1:
-                // TODO(me): understand: why? is it ever used?
-                this->weights.back()->coeffRef(n_actual_neurons_previous_layer,
-                                         n_neurons_current_layer - 1) = 1.0;
-            }
+            // initializing bias terms with zeros (overwriting the previous,
+            // general initialization, that was meant for the actual
+            // weights) by setting the last columns of the weight matrix,
+            // i.e. the weights that connect the fictitious bias inputs of
+            // the previous layer to the current layer's neurons, to all
+            // zeros, as appropriate for biases:
+            this->weights.back()->row(n_neurons_previous_layer - 1).setZero();
         }
     }
 }
@@ -238,8 +225,7 @@ float FullyConnectedNeuralNetwork::activationFunctionDerivative(
  Compute the loss value comparing the last layer outputs to the target
  predictions, compute the gradient of such loss with respect to each model
  weight and update these latter accordingly, to carry out a single step of
- gradient descent.
- The weights of each layer - except the input layer, that is not
+ gradient descent; the weights of each layer - except the input layer, that is not
  associated to any weight matrix - are updated via Stochastic Gradient Descent,
  with mini-batched of size 1.
 */
@@ -247,73 +233,38 @@ void FullyConnectedNeuralNetwork::backPropagation(
     const Tensor1D* target_output,
     const float& learning_rate
 ) {
-    uint last_hidden_layer_index = this->n_neurons_in_each_layer.size() - 2;
-
-    // computing the error on the model outputs, i.e. on the activations of
-    // the last layer, so as to start backpropagation, propagating it through
-    // previous layers in turn, backwards:
-    (*(this->activation_errors.back())) = squaredErrorLoss(
-        this->activations.back(), target_output);
-
-    // for each layer but the output one, i.e. for each layer with a layer
-    // ahead to backpropagate errors from (from the input layer to the last
-    // hidden layer) - NOTE: weight matrices can be enumerated with these
-    // layers and so are they (considering the layer they "start from" as the
-    // layer they are associated with):
-    for (int layer_indx = last_hidden_layer_index; layer_indx >= 0;
-            --layer_indx
+    // for each actual layer (all layers but the input one), i.e. for each
+    // layer with a weight matrix associated:
+    uint last_actual_layer_index = this->n_neurons_in_each_layer.size() - 2;
+    for (int actual_layer_indx = last_actual_layer_index;
+            actual_layer_indx >= 0; --actual_layer_indx
     ) {
-        uint n_columns = this->weights[layer_indx]->cols();
-        uint n_rows = this->weights[layer_indx]->rows();
+        uint n_neurons_previous_layer = this->weights[actual_layer_indx]
+            ->rows();
+        uint n_neurons_current_layer = this->weights[actual_layer_indx]
+            ->cols();
 
-        // computing the errors on the activation functions of the current
-        // layer based on the (already computed) errors on the activation
-        // functions of the following layer - this is not necessary for the
-        // input layer, which is skipped:
-        if (layer_indx > 0) {
-            (*(this->activation_errors[layer_indx])) =
-                (*(this->activation_errors[layer_indx + 1]))
-                * (this->weights[layer_indx]->transpose());
-        }
+        // TODO(me):
+        // computing the loss derivative with respect to the the activations of
+        // the current layer, so as to start backpropagation, propagating
+        // such loss gradient through the previous layers in turn, backwards, to
+        // reach each weight via Chain Rule:
+        activation_gradients[actual_layer_indx] = ;
 
         // for each row of the current layer weight matrix, i.e. for each
-        // input neuron of the considered layer:
-        for (uint row_indx = 0; row_indx < n_rows; ++row_indx) {
-            // for the input layer and all the hidden layers but the last
-            // hidden one:
-            if (layer_indx != last_hidden_layer_index) {
-                // for each column of the current layer weight matrix, i.e.
-                // for each neuron of the following layer, but the last one
-                // since biases are not associated to neurons?!:
-                // TODO(me): understand
-                uint n_relevant_columns = n_columns - 1;
-                for (uint column_indx = 0; column_indx < n_relevant_columns;
-                        ++column_indx
-                ) {
-                    // updating the weight corresponding to the current row
-                    // and column positions, i.e. the weight representing the
-                    // connection from the considered neuron of the current
-                    // layer to the considered neuron of the following layer:
-                    this->updateWeightViaSGD(layer_indx, row_indx, column_indx,
-                                             learning_rate, target_output);
-                }
-
-            // for the last hidden layer:
-            } else {
-                // for each column of the current layer weight matrix, i.e.
-                // for each neuron of the following layer - biases are not
-                // present in the output layer, so in the current weight
-                // matrix:
-                for (uint column_indx = 0; column_indx < n_columns;
-                        ++column_indx
-                ) {
-                    // updating the weight corresponding to the current row
-                    // and column positions, i.e. the weight representing the
-                    // connection from the considered neuron of the current
-                    // layer to the considered neuron of the following layer:
-                    this->updateWeightViaSGD(layer_indx, row_indx, column_indx,
-                                             learning_rate, target_output);
-                }
+        // input neuron to the considered layer:
+        for (uint previous_neuron_indx = 0; previous_neuron_indx
+                < n_neurons_previous_layer; ++previous_neuron_indx
+        ) {
+            // for each column of the current layer weight matrix, i.e.
+            // for each neuron of the considered layer:
+            for (uint current_neuron_indx = 0; current_neuron_indx
+                    < n_neurons_current_layer; ++current_neuron_indx
+            ) {
+                // updating the weight connecting the two considered neurons:
+                this->updateWeightViaSGD(actual_layer_indx,
+                    previous_neuron_indx, current_neuron_indx, learning_rate,
+                    target_output);
             }
         }
     }
@@ -325,9 +276,9 @@ void FullyConnectedNeuralNetwork::backPropagation(
  such layer weight matrix.
 */
 float FullyConnectedNeuralNetwork::computeLossGradientWRTWeight(
-    const uint& layer_indx,
-    const uint& row_indx,
-    const uint& column_indx,
+    const uint& actual_layer_indx,
+    const uint& previous_neuron_indx,
+    const uint& current_neuron_indx,
     const Tensor1D* target_output
 ) {
     /*
@@ -335,34 +286,54 @@ float FullyConnectedNeuralNetwork::computeLossGradientWRTWeight(
 
     d/dw_n(l) = d/dw_n(p_n) * d/dp_n(a_n) * d/da_n(l) =
               = d/dw_n(p_n) * 1 * squaredErrorLossDerivative =
-                { a_n-1 * 1 * squaredErrorLossDerivative     if w_n != bias }
-              = {                                                           }
-                { 1 * 1 * squaredErrorLossDerivative         if w_n == bias }
+              = a_n-1 * 1 * squaredErrorLossDerivative
+              in general
+               (1 * 1 * squaredErrorLossDerivative if w_n = bias)
+
         for the output layer (n == N),
 
+    // TODO(me): update
     d/dw_n(l) = d/dw_n(p_n) * d/dp_n(a_n) * d/da_n(p_n+1) = 
               = d/dw_n(p_n) * activationFunctionDerivative * d/da_n(p_n+1) =
-                { a_n-1 * activationFunctionDerivative * d/da_n(p_n+1) if w_n != bias }
-              = {                                                           }
-                { 1 * activationFunctionDerivative * d/da_n(p_n+1)     if w_n == bias }
-         for the hidden layers (N < n < 0),    
+              = a_n-1 * activationFunctionDerivative * d/da_n(p_n+1) 
+              in general
+            ( = 1 * activationFunctionDerivative * d/da_n(p_n+1) if w_n = bias)
+
+        for the hidden layers (N < n < 0),
 
     where w_n = weight of n-th layer, l = loss, p = action potential of n-th
      layer, a = activation of n-th layer ❏
     */
-   // TODO(me): update biases, which are never updated
-   // TODO(me): introduce and distinguish the last layer update
-   if (layer_indx != this->n_neurons_in_each_layer[-2]) {
-        return - this->activation_errors[layer_indx + 1]->coeffRef(column_indx)
+   float gradient;
+
+   if (actual_layer_indx != this->n_neurons_in_each_layer.size() - 2) {
+        gradient = 0;
+        for (uint following_neuron_indx = 0; following_neuron_indx <
+                this->n_neurons_in_each_layer[actual_layer_indx + 2];
+                ++following_neuron_indx
+        ) {
+            gradient += this->activation_gradients[actual_layer_indx]
+                ->coeffRef(current_neuron_indx)
+                * this->weight[actual_layer_indx + 1]
+                ->coeffRef(actual_layer_indx, following_neuron_indx);
+        }
+        gradient = gradient
+            * this->activations[actual_layer_indx - 1]
+                ->coeffRef(previous_neuron_indx)
             * this->activationFunctionDerivative(
-                this->action_potentials[layer_indx + 1]->coeffRef(column_indx))
-            * this->activations[layer_indx]->coeffRef(row_indx);
+                this->action_potentials[actual_layer_indx]
+                    ->coeffRef(current_neuron_indx));
     } else {
-        return - this->squaredErrorLossDerivative(
-                this->action_potentials[layer_indx + 1]->coeffRef(column_indx),
-                target_output->coeffRef(0))
-            * this->activations[layer_indx]->coeffRef(row_indx);
+        gradient = 
+            this->activations[actual_layer_indx - 1]
+                ->coeffRef(previous_neuron_indx)
+            * this->squaredErrorLossDerivative(
+                this->action_potentials[actual_layer_indx]
+                    ->coeffRef(current_neuron_indx),
+                target_output->coeffRef(0));
     }
+
+    return gradient;
 }
 
 /**
@@ -430,30 +401,41 @@ void FullyConnectedNeuralNetwork::evaluate(
 void FullyConnectedNeuralNetwork::forwardPropagation(
     const Tensor1D* inputs
 ) {
-    int n_layers = this->n_neurons_in_each_layer.size();
+    // number of layers without considering the input one:
+    int n_actual_layers = this->n_neurons_in_each_layer.size();
 
     // setting the input layer values as the inputs - accessing a block of
-    // size (p,q) starting at (i,j) via ".block(i,j,p,q)" for tensors:
-    uint n_input_neurons = this->activations.front()->size();
-    this->activations.front()->block(0, 0, 1, n_input_neurons - 1) = *inputs;
+    // size (p, q) starting at (i, j) via ".block(i, j, p, q)" for tensors:
+    uint n_input_neurons = this->inputs->size();
+    this->inputs->block(0, 0, 1, n_input_neurons - 1) = *inputs;
 
-    // propagating the inputs to the outputs by computing the activations of
+    // propagating the inputs to the output by computing the activations of
     // each neuron in each layer from the previous layer's activations by
     // linearly combining the neuron inputs with the respective weights first
     // and then applying the activation function, layer by layer:
-    for (int i = 1; i < n_layers; ++i) {
-        // computing the result of the linear combination with weights (i.e.
-        // the action potential):
-        (*(this->activations[i])) = (*(this->activations[i - 1]))
-            * (*(this->weights[i - 1]));
+    for (int layer_indx = 1; layer_indx < n_actual_layers; ++layer_indx) {
+        // computing the result of the linear combination of the previous
+        // layer's activations (or of the inputs, in case the input layer is
+        // the previous one) with weights, i.e. the action potential:
+        if (layer_indx != 0) {
+            (*(this->action_potentials[layer_indx])) = (*(this->
+                activations[layer_indx - 1])) * (*(this->weights[layer_indx]));
+        } else {
+            (*(this->action_potentials[layer_indx])) = (*(this->
+                inputs)) * (*(this->weights[layer_indx]));
+        }
 
-        // for all layers but the last one, whose outputs require a different
+        // usign the action potentials as starting values for the activations:
+        (*(this->activations[layer_indx])) = (*(this
+            ->action_potentials[layer_indx]));
+
+        // for all layers but the last one, whose output does not require an
         // activation function:
-        if (i != n_layers - 1) {
+        if (layer_indx != n_actual_layers - 1) {
             // applying the activation function to the linear combination
             // result:
-            uint n_neurons = this->n_neurons_in_each_layer[i];
-            this->activations[i]->block(0, 0, 1, n_neurons).unaryExpr(
+            uint n_neurons = this->n_neurons_in_each_layer[layer_indx];
+            this->activations[layer_indx]->block(0, 0, 1, n_neurons).unaryExpr(
                 std::bind(&FullyConnectedNeuralNetwork::activationFunction,
                           this, std::placeholders::_1));
         }
@@ -484,8 +466,10 @@ float FullyConnectedNeuralNetwork::squaredErrorLossDerivative(
     NOTE - the mathematical derivation follows:
 
     d/dx((x - y)**2) = d/dx(x**2 -2xy + y**2) =
-     = d/dx(x**2) + d/dx(-2xy) + d/dx(y**2)) =
-     = 2x +(-2y) + 0 = 2x - 2y = 2(x - y),
+                     = d/dx(x**2) + d/dx(-2xy) + d/dx(y**2)) =
+                     = 2x +(-2y) + 0 =
+                     = 2x - 2y =
+                     = 2(x - y),
 
     where x = predicted_output, y = target_output ❏
     */
