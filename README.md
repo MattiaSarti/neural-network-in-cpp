@@ -2,10 +2,16 @@
     <p>A C++ Implementation of a Fully-Connected Neural Network</p>
 </h1>
 
-A C++ implementation of a feed-forward, fully-connected, multi-layer neural network for single-output regression problems, trained via Stochastic Gradient Descent (mini-batches of 1 sample) and evaluated in terms of Mean Squared Error respectively on training and validation partitions of a self-made non-linear regression dataset: a 2D projection of a Swiss Roll dataset by Scikit-Learn, whose samples are shown as color-coded by output value in the 2D feature space in the following picture.
+A C++ implementation of a feed-forward, fully-connected, multi-layer neural network for single-output regression problems, including both forward and backward propagation, trained via Stochastic Gradient Descent (mini-batches of 1 sample) and evaluated in terms of Mean Squared Error respectively on training and validation partitions of a self-made non-linear regression dataset: a 2D projection of a Swiss Roll dataset by Scikit-Learn, whose samples are shown as color-coded by output value in the 2D feature space in the following picture.
 
 <p align="center">
     <img src="https://github.com/MattiaSarti/toy-neural-network-in-cpp/blob/main/readme_pictures/whole_dataset.png" alt="...loading..."  width="500"/>
+</p>
+
+Results on the validation set follow, represented visually, confirming the capability of the model to learn non-linear representations and the correctness of the implementation.
+
+<p align="center">
+    <img src="https://github.com/MattiaSarti/toy-neural-network-in-cpp/blob/main/readme_pictures/predictions_before_and_after_training.png" alt="...loading..."  width="1000"/>
 </p>
 
 
@@ -85,7 +91,7 @@ TODO(me): illustrate command, ```python plot_validation_predictions.py```
     <img src="https://github.com/MattiaSarti/toy-neural-network-in-cpp/blob/main/readme_pictures/predictions_before_and_after_training.png" alt="...loading..."  width="1200"/>
 </p>
 
-TODO(me): let note how cool it is\
+TODO(me): let note how cool it is
 
 #### A Note on Reproducibility
 Results are perfectly reproducible as all sources of randomness (dataset creation and splitting, weight initialization) have seen their seeds fixed.\
