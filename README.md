@@ -8,7 +8,8 @@ A C++ implementation of a feed-forward, fully-connected, multi-layer neural netw
     <img src="https://github.com/MattiaSarti/toy-neural-network-in-cpp/blob/main/readme_pictures/whole_dataset.png" alt="...loading..."  width="500"/>
 </p>
 
-Results on the validation set follow, represented visually, confirming the capability of the model to learn non-linear representations and the correctness of the implementation.
+Results on the validation set follow, presented visually, confirming the capability of the model to learn non-linear representations and the correctness of the implementation.
+<br>
 
 <p align="center">
     <img src="https://github.com/MattiaSarti/toy-neural-network-in-cpp/blob/main/readme_pictures/predictions_before_and_after_training.png" alt="...loading..."  width="1000"/>
@@ -37,9 +38,7 @@ What I have implemented... After reviewing backpropagation theory, ... designed 
 
 ### Steps:
 
-TODO(me): describe dataset, task and aim, i.e. see that it could learn complex, non-linear representations and use them for regression (dataset highly non-linear to such end),\
-TODO(me): describe evaluation, MSE both as training loss and metric (which is possible as it is differentiable and represent a good metric)\
- ```python create_dataset.py```
+TODO(me): describe dataset, task and aim, i.e. see that it could learn complex, non-linear representations and use them for regression (dataset highly non-linear to such end), describe evaluation, MSE both as training loss and metric (which is possible as it is differentiable and represent a good metric), ```python create_dataset.py```
 
 <p align="center">
     <img src="https://github.com/MattiaSarti/toy-neural-network-in-cpp/blob/main/readme_pictures/whole_dataset.png" alt="...loading..."  width="500"/>
