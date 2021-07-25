@@ -38,7 +38,7 @@ What I have implemented... After reviewing backpropagation theory, ... designed 
 
 ### Steps:
 
-1. Create the Dataset\
+1. **Create the Dataset**
 
     TODO(me): describe dataset, task and aim, i.e. see that it could learn complex, non-linear representations and use them for regression (dataset highly non-linear to such end), describe evaluation, MSE both as training loss and metric (which is possible as it is differentiable and represent a good metric), ```python create_dataset.py```
 
@@ -50,7 +50,7 @@ What I have implemented... After reviewing backpropagation theory, ... designed 
         <img src="https://github.com/MattiaSarti/toy-neural-network-in-cpp/blob/main/readme_pictures/separate_sets.png" alt="...loading..."  width="1200"/>
     </p>
 
-2. Create, Train and Validate the Model\
+2. **Create, Train and Validate the Model**
 
     TODO(me): describe that next launch script that does everything\
 
@@ -88,7 +88,7 @@ What I have implemented... After reviewing backpropagation theory, ... designed 
     - - - - - - - - - - - -
     ```
 
-3. Evaluate Results Visually
+3. **Evaluate Results Visually**
 
     TODO(me): illustrate command, ```python plot_validation_predictions.py```
 
