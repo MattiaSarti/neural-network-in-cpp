@@ -38,7 +38,9 @@ What I have implemented... After reviewing backpropagation theory, ... designed 
 
 ### Steps:
 
-1. TODO(me): describe dataset, task and aim, i.e. see that it could learn complex, non-linear representations and use them for regression (dataset highly non-linear to such end), describe evaluation, MSE both as training loss and metric (which is possible as it is differentiable and represent a good metric), ```python create_dataset.py```
+1. Create the Dataset\
+
+    TODO(me): describe dataset, task and aim, i.e. see that it could learn complex, non-linear representations and use them for regression (dataset highly non-linear to such end), describe evaluation, MSE both as training loss and metric (which is possible as it is differentiable and represent a good metric), ```python create_dataset.py```
 
     <p align="center">
         <img src="https://github.com/MattiaSarti/toy-neural-network-in-cpp/blob/main/readme_pictures/whole_dataset.png" alt="...loading..."  width="500"/>
@@ -48,7 +50,9 @@ What I have implemented... After reviewing backpropagation theory, ... designed 
         <img src="https://github.com/MattiaSarti/toy-neural-network-in-cpp/blob/main/readme_pictures/separate_sets.png" alt="...loading..."  width="1200"/>
     </p>
 
-2. TODO(me): describe that next launch script that does everything\
+2. Create, Train and Validate the Model\
+
+    TODO(me): describe that next launch script that does everything\
 
     I did some manual hyperparameter tuning beforehand to know how many layers and neurons in each one could yield good results on a similar dataset exploiting [TensorFlow Playground](https://playground.tensorflow.org/), and [these final settings that I tried](https://playground.tensorflow.org/#activation=relu&batchSize=1&dataset=spiral&regDataset=reg-gauss&learningRate=0.01&regularizationRate=0&noise=0&networkShape=8,8,6,4&seed=0.75558&showTestData=false&discretize=false&percTrainData=70&x=true&y=true&xTimesY=false&xSquared=false&ySquared=false&cosX=false&sinX=false&cosY=false&sinY=false&collectStats=false&problem=classification&initZero=false&hideText=false) convinced me to input such architecture hyperparameters (number of layers and neurons each) to the script execution:
 
@@ -84,7 +88,9 @@ What I have implemented... After reviewing backpropagation theory, ... designed 
     - - - - - - - - - - - -
     ```
 
-3. TODO(me): illustrate command, ```python plot_validation_predictions.py```
+3. Evaluate Results Visually
+
+    TODO(me): illustrate command, ```python plot_validation_predictions.py```
 
     <p align="center">
         <img src="https://github.com/MattiaSarti/toy-neural-network-in-cpp/blob/main/readme_pictures/predictions_before_and_after_training.png" alt="...loading..."  width="1200"/>
