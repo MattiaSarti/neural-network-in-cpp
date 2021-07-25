@@ -22,6 +22,7 @@ const bool VERBOSE = false;
 
 int main() {
     // loading training and validation sets:
+
     std::vector<Tensor1D*> training_samples;
     std::vector<Tensor1D*> training_labels;
     loadDataset("training_set.csv", &training_samples, &training_labels);
@@ -37,8 +38,11 @@ int main() {
     // asserting that the number of neurons of first layer equals the number
     // of features that samples in the dataset have:
     assert(N_NEURONS_IN_LAYERS.front() == validation_samples.front()->size());
+
+    // initializing the model:
     FullyConnectedNeuralNetwork model(N_NEURONS_IN_LAYERS,
                                       ACTIVATION_FUNCTIONS_NAME);
+    std::cout << "model initialized ✓" << std::endl;
 
     std::cout << "- - - - - - - - - - - -" << std::endl;
 
