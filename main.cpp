@@ -11,9 +11,11 @@
 // architecture hyperparameters:
 const auto ACTIVATION_FUNCTIONS_NAME = "ReLU";
 const std::vector<uint> N_NEURONS_IN_LAYERS = {2, 8, 8, 6, 4};
+
 // training hyperparameters:
-const float LEARNING_RATE = 0.00001;
-const uint N_EPOCHS = 1;
+const float LEARNING_RATE = 0.0001;
+const uint N_EPOCHS = 10;
+
 // display options:
 const bool VERBOSE = false;
 
