@@ -60,14 +60,14 @@ What I have implemented... After reviewing backpropagation theory, ... designed 
     TODO(me): show as printed
 
     ```
-    training set loaded Ô£ô
-    validation set loaded Ô£ô
+    training set loaded ✓
+    validation set loaded ✓
     - - - - - - - - - - - -
-    model initialized Ô£ô
+    model initialized ✓
     - - - - - - - - - - - -
     average loss on the validation set: 96.1722
     - - - - - - - - - - - -
-    training started Ô£ô
+    training started ✓
     epoch 1/10
     epoch 2/10
     epoch 3/10
@@ -78,7 +78,7 @@ What I have implemented... After reviewing backpropagation theory, ... designed 
     epoch 8/10
     epoch 9/10
     epoch 10/10
-    model successfully trained Ô£ô
+    model successfully trained ✓
     - - - - - - - - - - - -
     average loss on the validation set: 1.53889
     - - - - - - - - - - - -
