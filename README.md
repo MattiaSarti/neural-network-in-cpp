@@ -9,7 +9,7 @@ A C++ implementation of a feed-forward, fully-connected, multi-layer neural netw
 </p>
 
 Results on the validation set follow, presented visually, confirming the capability of the model to learn non-linear representations and the correctness of the implementation.
-<br>
+<br><br>
 
 <p align="center">
     <img src="https://github.com/MattiaSarti/toy-neural-network-in-cpp/blob/main/readme_pictures/predictions_before_and_after_training.png" alt="...loading..."  width="1000"/>
