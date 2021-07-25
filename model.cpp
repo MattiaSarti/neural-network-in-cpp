@@ -10,6 +10,21 @@
 
 
 /**
+ Compute the value of the Leaky ReLU function for the given input.
+*/
+float leakyReLUFunction(const float& input) {
+    return std::max(input, static_cast<float>(0));  // TODO(me)
+}
+
+/**
+ Compute the value of the derivative of the Leaky ReLU function for the given
+ input.
+*/
+float leakyReLUFunctionDerivative(const float& input) {
+    return ((input > 0) ? static_cast<float>(1) : static_cast<float>(0));  // TODO(me)
+}
+
+/**
  Compute the value of the ReLU function for the given input.
 */
 float ReLUFunction(const float& input) {
@@ -17,8 +32,7 @@ float ReLUFunction(const float& input) {
 }
 
 /**
- Compute the value of the derivative of the ReLU function for the given
- input.
+ Compute the value of the derivative of the ReLU function for the given input.
 */
 float ReLUFunctionDerivative(const float& input) {
     return ((input > 0) ? static_cast<float>(1) : static_cast<float>(0));
@@ -41,8 +55,8 @@ float sigmoidFunctionDerivative(const float& input) {
 
 /**
  Feed-forward, fully-connected, multi-layer neural network for single-output
- regression with either sigmoidal or ReLU (settable choice) activation
- functions and with biases in hidden layers.
+ regression with settable kind of activation functions (either leakyReLU, ReLU
+ or sigmoidal kind) and with biases in hidden layers.
 */
 class FullyConnectedNeuralNetwork {
  public:
@@ -97,7 +111,7 @@ class FullyConnectedNeuralNetwork {
     // followed by activation function application:
     std::vector<Tensor1D*> activations;
     // architecture hyperparameter specifying the kind of activation functions
-    // to use (whether ReLUs or sigmoids):
+    // to use:
     std::string activation_functions_kind;
     // inputs, i.e. feature values of the considered sample:
     Tensor1D* inputs;
@@ -116,7 +130,8 @@ FullyConnectedNeuralNetwork::FullyConnectedNeuralNetwork(
     const std::string& activation_functions
 ) {
     // asserting that a valid activation functions' kind is given:
-    assert((activation_functions == "ReLU")
+    assert((activation_functions == "leakyReLU")
+            || (activation_functions == "ReLU")
             || (activation_functions == "sigmoid"));
 
     // setting the kind of activation functions employed:
@@ -206,8 +221,15 @@ FullyConnectedNeuralNetwork::FullyConnectedNeuralNetwork(
 float FullyConnectedNeuralNetwork::activationFunction(
     const float& input
 ) {
-    return ((this->activation_functions_kind == "sigmoid")
-            ? sigmoidFunction(input) : ReLUFunction(input));
+    if (this->activation_functions_kind == "leakyReLU") {
+        return leakyReLUFunction(input);
+    } else if (this->activation_functions_kind == "ReLU") {
+        return ReLUFunction(input);
+    } else if (this->activation_functions_kind == "sigmoid") {
+        return sigmoidFunction(input);
+    } else {
+        throw std::invalid_argument("Ill-designed code.");
+    }
 }
 
 /**
@@ -218,8 +240,15 @@ float FullyConnectedNeuralNetwork::activationFunction(
 float FullyConnectedNeuralNetwork::activationFunctionDerivative(
     const float& input
 ) {
-    return ((this->activation_functions_kind == "sigmoid")
-        ? sigmoidFunctionDerivative(input) : ReLUFunctionDerivative(input));
+    if (this->activation_functions_kind == "leakyReLU") {
+        return leakyReLUFunctionDerivative(input);
+    } else if (this->activation_functions_kind == "ReLU") {
+        return ReLUFunctionDerivative(input);
+    } else if (this->activation_functions_kind == "sigmoid") {
+        return sigmoidFunctionDerivative(input);
+    } else {
+        throw std::invalid_argument("Ill-designed code.");
+    }
 }
 
 /**
