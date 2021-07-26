@@ -1,126 +1,12 @@
 /*
- Definition of the class representing a Feed-Forward, Fully-Connected,
- Multilayer Neural Network, with methods that allow not only to make
- inferences and evaluate the goodness of predictions but also to train the
- model.
+ Class representing a Feed-Forward, Fully-Connected, Multilayer Neural Network,
+ with methods that allow not only to make inferences and evaluate the goodness
+ of predictions but also to train the model.
 */
 
 
-#include "common.hpp"//"model.hpp"  // FIXME
+#include "model.hpp"
 
-
-/**
- Compute the value of the Leaky ReLU function for the given input.
-*/
-float leakyReLUFunction(const float& input) {
-    return ((input > 0) ? input : (input * 0.1));
-}
-
-/**
- Compute the value of the derivative of the Leaky ReLU function for the given
- input.
-*/
-float leakyReLUFunctionDerivative(const float& input) {
-    return ((input > 0) ? static_cast<float>(1) : static_cast<float>(0.1));
-}
-
-/**
- Compute the value of the ReLU function for the given input.
-*/
-float ReLUFunction(const float& input) {
-    return std::max(input, static_cast<float>(0));
-}
-
-/**
- Compute the value of the derivative of the ReLU function for the given input.
-*/
-float ReLUFunctionDerivative(const float& input) {
-    return ((input > 0) ? static_cast<float>(1) : static_cast<float>(0));
-}
-
-/**
- Compute the value of the sigmoid function for the given input.
-*/
-float sigmoidFunction(const float& input) {
-    return 1 / (1 + exp(-input));
-}
-
-/**
- Compute the value of the derivative of the sigmoid function for the given
- input.
-*/
-float sigmoidFunctionDerivative(const float& input) {
-    return sigmoidFunction(1 - sigmoidFunction(input));
-}
-
-/**
- Feed-forward, fully-connected, multi-layer neural network for single-output
- regression with settable kind of activation functions (either leakyReLU, ReLU
- or sigmoidal kind) and with biases in hidden layers.
-*/
-class FullyConnectedNeuralNetwork {
- public:
-    explicit FullyConnectedNeuralNetwork(
-        std::vector<uint> n_neurons_in_each_layer,
-        const std::string& activation_functions);
-    float activationFunction(
-        const float& input);
-    float activationFunctionDerivative(
-        const float& input);
-    void backPropagation(
-        const Tensor1D* target_output,
-        const float& learning_rate);
-    float computeLossGradientWRTWeight(
-        const uint& actual_layer_indx,
-        const uint& previous_neuron_indx,
-        const uint& current_neuron_indx,
-        const Tensor1D* target_output);
-    void evaluate(
-        const std::vector<Tensor1D*>& validation_samples,
-        const std::vector<Tensor1D*>& validation_labels,
-        const std::string& output_path,
-        const bool& verbose);
-    void forwardPropagation(
-        const Tensor1D* inputs);
-    static Tensor1D squaredErrorLoss(
-        const Tensor1D* predicted_output,
-        const Tensor1D* target_output);
-    static float squaredErrorLossDerivative(
-        const float& predicted_output,
-        const float& target_output);
-    void updateWeightViaSGD(
-        const uint& actual_layer_indx,
-        const uint& previous_neuron_indx,
-        const uint& current_neuron_indx,
-        const float& learning_rate,
-        const Tensor1D* target_output);
-    void train(
-        const std::vector<Tensor1D*>& inputs,
-        const std::vector<Tensor1D*>& targets,
-        const float& learning_rate,
-        const uint& n_epochs,
-        const bool& verbose);
-
- private:
-    // layers' action potentials, i.e. intermediate linear combination results
-    // before activation function application:
-    std::vector<Tensor1D*> action_potentials;
-    // loss gradients with respect to layers' action potentials:
-    std::vector<Tensor1D*> action_potentials_gradients;
-    // layers' activations, i.e. results of linear combination with weights
-    // followed by activation function application:
-    std::vector<Tensor1D*> activations;
-    // architecture hyperparameter specifying the kind of activation functions
-    // to use:
-    std::string activation_functions_kind;
-    // inputs, i.e. feature values of the considered sample:
-    Tensor1D* inputs;
-    // architecture hyperparameters specifying the number of layers and the
-    // number of neurons each:
-    std::vector<uint> n_neurons_in_each_layer;
-    // layers' weights (including biases):
-    std::vector<Tensor2D*> weights;
-};
 
 /**
  Build the neural network architecture components.
@@ -611,4 +497,31 @@ void FullyConnectedNeuralNetwork::train(
     }
 
     std::cout << "model successfully trained ✓" << std::endl;
+}
+
+/**
+ Update the selected weight, which is individuated by its (starting, not
+ ending) layer index and its position in such layer weight matrix, to carry
+ out a step of Stochastic Gradient Descent modulated by the given learning
+ rate.
+*/
+void FullyConnectedNeuralNetwork::updateWeightViaSGD(
+    const uint& actual_layer_indx,
+    const uint& previous_neuron_indx,
+    const uint& current_neuron_indx,
+    const float& learning_rate,
+    const Tensor1D* target_output
+) {
+    /*
+    NOTE - the mathematical formulation of weight update for SGD follows:
+
+    w_new = w_old - learning_rate * d/dw_old(l),
+
+    where l = loss value, w_new = updated weight value, w_old = old weight
+     value                                                                 ❏
+    */
+    this->weights[actual_layer_indx]->coeffRef(previous_neuron_indx,
+        current_neuron_indx) -= learning_rate
+             * this->computeLossGradientWRTWeight(actual_layer_indx, previous_neuron_indx,
+                                                  current_neuron_indx, target_output);
 }
