@@ -40,7 +40,7 @@ After studying C++ syntax and reviewing neural networks' theory (mostly gradient
 
 1. **Create the Dataset**
 
-    TODO(me): describe dataset, task and aim, ```python create_dataset.py```
+    First, run ```python create_dataset.py``` from the root folder of this project to create and save the above-mentioned dataset; these plots describing the created datasets will be displayed (and saved) as well:
 
     <p align="center">
         <img src="https://github.com/MattiaSarti/toy-neural-network-in-cpp/blob/main/readme_pictures/whole_dataset.png" alt="...loading..."  width="500"/>
@@ -52,7 +52,7 @@ After studying C++ syntax and reviewing neural networks' theory (mostly gradient
 
 2. **Create, Train and Validate the Model**
 
-    TODO(me):  describe evaluation, MSE both as training loss and metric (which is possible as it is differentiable and represent a good metric),describe that next launch script that does everything, describe the hyperparameters that have been set\
+    TODO(me):  describe model, hyperparameters, training and validation, evaluation, MSE both as training loss and metric (which is possible as it is differentiable and represent a good metric),describe that next launch script that does everything, describe the hyperparameters that have been set\
 
     I did some manual hyperparameter tuning beforehand to know how many layers and neurons in each one could yield good results on a similar dataset exploiting [TensorFlow Playground](https://playground.tensorflow.org/), and [these final settings that I tried](https://playground.tensorflow.org/#activation=relu&batchSize=1&dataset=spiral&regDataset=reg-gauss&learningRate=0.01&regularizationRate=0&noise=0&networkShape=8,8,6,4&seed=0.75558&showTestData=false&discretize=false&percTrainData=70&x=true&y=true&xTimesY=false&xSquared=false&ySquared=false&cosX=false&sinX=false&cosY=false&sinY=false&collectStats=false&problem=classification&initZero=false&hideText=false) convinced me to input such architecture hyperparameters (number of layers and neurons each) to the script execution:
 
@@ -61,7 +61,7 @@ After studying C++ syntax and reviewing neural networks' theory (mostly gradient
     executable_file
     ```
 
-    TODO(me): show as printed
+    Logs illustrating the executed steps (and the validation metrics) will be printed to your standard output:
 
     ```
     training set loaded ✓
@@ -87,13 +87,13 @@ After studying C++ syntax and reviewing neural networks' theory (mostly gradient
 
 3. **Evaluate Results Visually**
 
-    TODO(me): illustrate command, ```python plot_validation_predictions.py```
+    Finally, plot the predictions on the validation set before and after training, to check what the model has learned, by running ```python plot_validation_predictions.py``` from the root folder:
 
     <p align="center">
         <img src="https://github.com/MattiaSarti/toy-neural-network-in-cpp/blob/main/readme_pictures/predictions_before_and_after_training.png" alt="...loading..."  width="1200"/>
     </p>
 
-    That's quite charming, isn't it?
+    This capability of learning non-linear patterns is quite charming, isn't it?
 
 #### A Note on Reproducibility
 Results are perfectly reproducible as all sources of randomness (dataset creation and splitting, weight initialization) have seen their seeds fixed.\
