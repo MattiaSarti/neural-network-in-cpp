@@ -145,7 +145,7 @@ FullyConnectedNeuralNetwork::FullyConnectedNeuralNetwork(
     uint n_layers = n_neurons_in_each_layer.size();
 
     // making random weight initialization reproducible:
-    srand(static_cast<uint>(0));  // NOLINT(cert-msc32-c, cert-msc51-cpp)
+    srand(static_cast<uint>(1));  // NOLINT(cert-msc32-c, cert-msc51-cpp)
 
     // considering the input features as the input layer's values - and adding
     // a fictitious, constant (+1) input for adding bias to the following
