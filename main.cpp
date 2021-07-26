@@ -5,7 +5,9 @@
 */
 
 
-#include "common.hpp"  // "model.hpp"  // FIXME
+#include "common.hpp"
+#include "load_dataset.hpp"
+#include "model.hpp"
 
 
 // architecture hyperparameters:
