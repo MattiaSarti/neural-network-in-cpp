@@ -2,13 +2,13 @@
     <p>A C++ Implementation of a Fully-Connected Neural Network</p>
 </h1>
 
-A C++ implementation of a feed-forward, fully-connected, multi-layer neural network for single-output regression problems, including both forward and backward propagation, trained via Stochastic Gradient Descent (mini-batches of 1 sample) and evaluated in terms of Mean Squared Error respectively on training and validation partitions of a self-made non-linear regression dataset: a 2D projection of a Swiss Roll dataset by Scikit-Learn, whose samples are shown as color-coded by output value in the 2D feature space in the following picture.
+A C++ implementation of a feed-forward, fully-connected, multi-layer neural network for single-output regression problems, including both forward and backward propagation, supporting settable hyperparameters such as activation functions' kind (Leaky ReLU, ReLU or Sigmoid) and number of layers and number of neurons each, trained via Stochastic Gradient Descent (mini-batches of 1 sample) and evaluated in terms of Mean Squared Error respectively on training and validation partitions of a self-made non-linear regression dataset: a 2D projection of a Swiss Roll dataset by Scikit-Learn, whose samples are shown as color-coded by output value in the 2D feature space in the following picture.
 
 <p align="center">
     <img src="https://github.com/MattiaSarti/toy-neural-network-in-cpp/blob/main/readme_pictures/whole_dataset.png" alt="...loading..."  width="500"/>
 </p>
 
-Results on the validation set follow, presented visually, confirming the capability of the model to learn non-linear representations and the correctness of the implementation.
+Results on the validation set follow, presented visually (please, mind the colorbar), confirming the capability of the model to learn non-linear representations and the correctness of the implementation.
 <br><br>
 
 <p align="center">
@@ -18,7 +18,7 @@ Results on the validation set follow, presented visually, confirming the capabil
 
 ## My Attitude
 
-What I have implemented... After reviewing backpropagation theory, ... designed it, made it computationally efficient, documented it (well-commented code) and added training and evaluation on such a self-made dataset, as an exercise to learn about C++ (and neural networks).
+After studying C++ syntax and reviewing neural networks' theory (mostly gradient computation for backpropagation), I designed the model class, made it computationally efficient, documented it (well-commented code) and added an example of training and evaluation on such a self-made dataset (Python was used only for the dataset creation and for displaying plots because of its more suitable libraries, that come in handy), as an exercise to learn about C++ (and neural networks).
 
 
 ## How to Reproduce Results
@@ -40,7 +40,7 @@ What I have implemented... After reviewing backpropagation theory, ... designed 
 
 1. **Create the Dataset**
 
-    TODO(me): describe dataset, task and aim, i.e. see that it could learn complex, non-linear representations and use them for regression (dataset highly non-linear to such end), describe evaluation, MSE both as training loss and metric (which is possible as it is differentiable and represent a good metric), ```python create_dataset.py```
+    TODO(me): describe dataset, task and aim, ```python create_dataset.py```
 
     <p align="center">
         <img src="https://github.com/MattiaSarti/toy-neural-network-in-cpp/blob/main/readme_pictures/whole_dataset.png" alt="...loading..."  width="500"/>
@@ -52,12 +52,12 @@ What I have implemented... After reviewing backpropagation theory, ... designed 
 
 2. **Create, Train and Validate the Model**
 
-    TODO(me): describe that next launch script that does everything\
+    TODO(me):  describe evaluation, MSE both as training loss and metric (which is possible as it is differentiable and represent a good metric),describe that next launch script that does everything, describe the hyperparameters that have been set\
 
     I did some manual hyperparameter tuning beforehand to know how many layers and neurons in each one could yield good results on a similar dataset exploiting [TensorFlow Playground](https://playground.tensorflow.org/), and [these final settings that I tried](https://playground.tensorflow.org/#activation=relu&batchSize=1&dataset=spiral&regDataset=reg-gauss&learningRate=0.01&regularizationRate=0&noise=0&networkShape=8,8,6,4&seed=0.75558&showTestData=false&discretize=false&percTrainData=70&x=true&y=true&xTimesY=false&xSquared=false&ySquared=false&cosX=false&sinX=false&cosY=false&sinY=false&collectStats=false&problem=classification&initZero=false&hideText=false) convinced me to input such architecture hyperparameters (number of layers and neurons each) to the script execution:
 
     ```
-    g++ main.cpp -I <your_eigen_path> -o executable_file
+    g++ main.cpp -I <your_eigen_library_path> -o executable_file
     executable_file
     ```
 
@@ -69,24 +69,21 @@ What I have implemented... After reviewing backpropagation theory, ... designed 
     - - - - - - - - - - - -
     model initialized ✓
     - - - - - - - - - - - -
-    average loss on the validation set: 96.1722
+    MSE on the validation set: 88.5111
     - - - - - - - - - - - -
     training started ✓
-    epoch 1/10
-    epoch 2/10
-    epoch 3/10
-    epoch 4/10
-    epoch 5/10
-    epoch 6/10
-    epoch 7/10
-    epoch 8/10
-    epoch 9/10
-    epoch 10/10
+    epoch 100/500
+    epoch 200/500
+    epoch 300/500
+    epoch 400/500
+    epoch 500/500
     model successfully trained ✓
     - - - - - - - - - - - -
-    average loss on the validation set: 1.53889
+    MSE on the validation set: 0.766667
     - - - - - - - - - - - -
     ```
+
+    *Interestingly, I was not able to reach such a good MSE with ReLU and Sigmoid activation functions but only with Leaky ReLU, which 1) does not suffer from the vanishing/exploding gradient problems while Sigmoid does (same advantage as ReLU) and 2) prevents gradients from "dying" when inputs are negative contrarily to ReLU, as always reported in literature.*
 
 3. **Evaluate Results Visually**
 
@@ -96,7 +93,7 @@ What I have implemented... After reviewing backpropagation theory, ... designed 
         <img src="https://github.com/MattiaSarti/toy-neural-network-in-cpp/blob/main/readme_pictures/predictions_before_and_after_training.png" alt="...loading..."  width="1200"/>
     </p>
 
-    TODO(me): let note how cool it is
+    That's quite charming, isn't it?
 
 #### A Note on Reproducibility
 Results are perfectly reproducible as all sources of randomness (dataset creation and splitting, weight initialization) have seen their seeds fixed.\
