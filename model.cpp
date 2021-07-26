@@ -402,6 +402,8 @@ void FullyConnectedNeuralNetwork::evaluate(
     std::ofstream file_stream(output_path);
     long double cumulative_loss = 0;
 
+    // printing some additional evaluation information when verbose messages
+    // are required:
     if (verbose) {
         std::cout << "evaluating predictions for every validation sample:"
             << std::endl;
@@ -414,6 +416,8 @@ void FullyConnectedNeuralNetwork::evaluate(
         // layers' activations sequentially:
         this->forwardPropagation(validation_samples[sample_indx]);
 
+        // printing some additional evaluation information when verbose
+        // messages are required:
         if (verbose) {
             std::cout << space;
             std::cout << "expected output: "
@@ -438,7 +442,7 @@ void FullyConnectedNeuralNetwork::evaluate(
     }
 
     // printing the average loss value over the samples of the validation set:
-    std::cout << "average loss on the validation set: "
+    std::cout << "MSE on the validation set: "
         << (cumulative_loss / n_samples) << std::endl;
 
     file_stream.close();
@@ -549,13 +553,18 @@ void FullyConnectedNeuralNetwork::train(
     assert(training_samples.size() == training_labels.size());
 
     uint n_samples = training_samples.size();
+    uint print_epoch_n_every = static_cast<uint>(n_epochs / 5);
 
     std::cout << "training started ✓" << std::endl;
 
     // for each epoch:
     for (uint epoch_indx = 0; epoch_indx < n_epochs; ++epoch_indx) {
-        std::cout << "epoch " << (epoch_indx + 1) << "/" << n_epochs
-            << std::endl;
+        // printing the epoch number when verbose messages are required or
+        // every tot. epochs otherwise:
+        if (verbose || ((epoch_indx + 1) % print_epoch_n_every == 0)) {
+            std::cout << "epoch " << (epoch_indx + 1) << "/" << n_epochs
+                << std::endl;
+        }
 
         // for each training sample:
         for (uint sample_indx = 0; sample_indx < n_samples; ++sample_indx) {
@@ -563,6 +572,8 @@ void FullyConnectedNeuralNetwork::train(
             // layers' activations sequentially:
             this->forwardPropagation(training_samples[sample_indx]);
 
+            // printing some additional training information when verbose
+            // messages are required:
             if (verbose) {
                 std::cout << "\t" << "sample features: "
                     << *training_samples[sample_indx] << std::endl;
@@ -582,6 +593,8 @@ void FullyConnectedNeuralNetwork::train(
             // accordingly:
             this->backPropagation(training_labels[sample_indx], learning_rate);
 
+            // printing some additional training information when verbose
+            // messages are required:
             if (verbose) {
                 std::cout << "\t" << "weights updated accordingly ✓"
                     << std::endl;
