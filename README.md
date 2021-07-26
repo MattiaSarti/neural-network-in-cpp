@@ -18,7 +18,7 @@ Results on the validation set follow, presented visually (please, mind the color
 
 ## My Attitude
 
-After studying C++ syntax and reviewing neural networks' theory (mostly gradient computation for backpropagation), I designed the model class, made it computationally efficient, documented it (well-commented code) and added an example of training and evaluation on such a self-made dataset (Python was used only for the dataset creation and for displaying plots because of its more suitable libraries, that come in handy), as an exercise to learn about C++ (and neural networks).
+After studying C++ syntax and reviewing neural networks' theory (mostly gradient computation for backpropagation), I designed the model class, made it computationally efficient, documented it (well-commented code) and added an example of training and evaluation on such a self-made dataset (Python was used only for the dataset creation and for displaying plots because of its more suitable libraries, that came in handy), as an exercise to learn about C++ (and neural networks).
 
 
 ## How to Reproduce Results
