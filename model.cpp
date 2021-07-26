@@ -13,7 +13,7 @@
  Compute the value of the Leaky ReLU function for the given input.
 */
 float leakyReLUFunction(const float& input) {
-    return std::max(input, static_cast<float>(0));  // TODO(me)
+    return ((input > 0) ? input : (input * 0.00001));
 }
 
 /**
@@ -21,7 +21,7 @@ float leakyReLUFunction(const float& input) {
  input.
 */
 float leakyReLUFunctionDerivative(const float& input) {
-    return ((input > 0) ? static_cast<float>(1) : static_cast<float>(0));  // TODO(me)
+    return ((input > 0) ? static_cast<float>(1) : static_cast<float>(0.00001));
 }
 
 /**
