@@ -87,7 +87,7 @@ After studying C++ syntax and reviewing neural networks' theory (mostly [gradien
     - - - - - - - - - - - -
     ```
 
-    *Interestingly, I was not able to reach such a good MSE with ReLU and Sigmoid activation functions but only with [Leaky ReLU](https://github.com/MattiaSarti/neural-network-in-cpp/blob/main/main.cpp#L14), which 1) does not suffer from the vanishing/exploding gradient problems while Sigmoid does (same advantage as ReLU) and 2) prevents gradients from "dying" when inputs are negative contrarily to ReLU, as always reported in literature.*
+    *Interestingly, I was not able to reach such a good MSE with ReLU and Sigmoid activation functions but only [with Leaky ReLU](https://github.com/MattiaSarti/neural-network-in-cpp/blob/main/main.cpp#L14), which 1) does not suffer from the vanishing/exploding gradient problems while Sigmoid does (same advantage as ReLU) and 2) prevents gradients from "dying" when inputs are negative contrarily to ReLU, as always reported in literature.*
 
 3. **Evaluate Results Visually**
 
