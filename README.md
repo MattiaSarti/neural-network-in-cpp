@@ -87,6 +87,8 @@ After studying C++ syntax and reviewing neural networks' theory (mostly [gradien
     - - - - - - - - - - - -
     ```
 
+    *Interestingly, I was not able to reach such a good validation MSE with ReLU and Sigmoid activation functions but only [with Leaky ReLU](https://github.com/MattiaSarti/neural-network-in-cpp/blob/main/main.cpp#L14), which 1) does not suffer from the vanishing/exploding gradient problems while Sigmoid does (same advantage as ReLU) and 2) prevents gradients from "dying" when inputs are negative contrarily to ReLU, as always reported in literature.*
+
 3. **Evaluate Results Visually**
 
     Finally, plot the predictions on the validation set before and after training, to check what the model has learned, by running ```python plot_validation_predictions.py``` from the root directory:
@@ -95,9 +97,7 @@ After studying C++ syntax and reviewing neural networks' theory (mostly [gradien
         <img src="https://github.com/MattiaSarti/toy-neural-network-in-cpp/blob/main/readme_pictures/predictions_before_and_after_training.png" alt="...loading..."  width="1200"/>
     </p>
 
-This capability of learning non-linear patterns is quite charming, isn't it?
-
-*Interestingly, I was not able to reach such a good validation MSE with ReLU and Sigmoid activation functions but only [with Leaky ReLU](https://github.com/MattiaSarti/neural-network-in-cpp/blob/main/main.cpp#L14), which 1) does not suffer from the vanishing/exploding gradient problems while Sigmoid does (same advantage as ReLU) and 2) prevents gradients from "dying" when inputs are negative contrarily to ReLU, as always reported in literature.*
+    This capability of modeling non-linear patterns is quite charming, isn't it?
 
 #### A Note on Reproducibility
 Results are perfectly reproducible as all sources of randomness (dataset creation and splitting, weight initialization) have seen their seeds fixed.\
