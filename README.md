@@ -52,9 +52,9 @@ After studying C++ syntax and reviewing neural networks' theory (mostly [gradien
 
 2. **Create, Train and Validate the Model**
 
-    TODO(me):  describe model, hyperparameters, training and validation, evaluation, MSE both as training loss and metric (which is possible as it is differentiable and represent a good metric), describe that next launch script that does everything, describe the hyperparameters that have been set
+    Next, [instantiate the model](https://github.com/MattiaSarti/neural-network-in-cpp/blob/main/main.cpp#L45) with [the chosen architecture](https://github.com/MattiaSarti/neural-network-in-cpp/blob/main/main.cpp#L13) and [train it](https://github.com/MattiaSarti/neural-network-in-cpp/blob/main/main.cpp#L59) to minimize the MSE on the training set (setting [these training hyperparameters](https://github.com/MattiaSarti/neural-network-in-cpp/blob/main/main.cpp#L17)) on the created dataset, evaluating its performances in terms of MSE (emlpoyed both as training loss and validation metric being differentiable) on the validation set both [before](https://github.com/MattiaSarti/neural-network-in-cpp/blob/main/main.cpp#L53) and [after](https://github.com/MattiaSarti/neural-network-in-cpp/blob/main/main.cpp#L66) training and saving predictions, by running from the root directory the commands that follow.
 
-    I did some manual hyperparameter tuning beforehand to know how many layers and neurons in each one could yield good results on a similar dataset exploiting [TensorFlow Playground](https://playground.tensorflow.org/), and [these final settings that I tried](https://playground.tensorflow.org/#activation=relu&batchSize=1&dataset=spiral&regDataset=reg-gauss&learningRate=0.01&regularizationRate=0&noise=0&networkShape=8,8,6,4&seed=0.75558&showTestData=false&discretize=false&percTrainData=70&x=true&y=true&xTimesY=false&xSquared=false&ySquared=false&cosX=false&sinX=false&cosY=false&sinY=false&collectStats=false&problem=classification&initZero=false&hideText=false) convinced me to input [such architecture hyperparameters (number of layers and neurons each)](https://github.com/MattiaSarti/neural-network-in-cpp/blob/main/main.cpp##L15) to the script execution:
+    I did some manual hyperparameter tuning beforehand to know how many layers and neurons in each one could yield good results on a similar dataset exploiting [TensorFlow Playground](https://playground.tensorflow.org/), and [these final settings that I tried](https://playground.tensorflow.org/#activation=relu&batchSize=1&dataset=spiral&regDataset=reg-gauss&learningRate=0.01&regularizationRate=0&noise=0&networkShape=8,8,6,4&seed=0.75558&showTestData=false&discretize=false&percTrainData=70&x=true&y=true&xTimesY=false&xSquared=false&ySquared=false&cosX=false&sinX=false&cosY=false&sinY=false&collectStats=false&problem=classification&initZero=false&hideText=false) convinced me to input [such architecture hyperparameters (number of layers and neurons each)](https://github.com/MattiaSarti/neural-network-in-cpp/blob/main/main.cpp##L15) to the execution:
 
     ```
     g++ -c -I <your_eigen_library_path> -o activation_functions.o activation_functions.cpp
@@ -91,7 +91,7 @@ After studying C++ syntax and reviewing neural networks' theory (mostly [gradien
 
 3. **Evaluate Results Visually**
 
-    Finally, plot the predictions on the validation set before and after training, to check what the model has learned, by running ```python plot_validation_predictions.py``` from the root folder:
+    Finally, plot the predictions on the validation set before and after training, to check what the model has learned, by running ```python plot_validation_predictions.py``` from the root directory:
 
     <p align="center">
         <img src="https://github.com/MattiaSarti/toy-neural-network-in-cpp/blob/main/readme_pictures/predictions_before_and_after_training.png" alt="...loading..."  width="1200"/>
